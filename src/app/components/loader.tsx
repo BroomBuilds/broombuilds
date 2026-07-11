@@ -23,6 +23,9 @@ import { scrollState } from "@/lib/scroll";
 
 const STORAGE_KEY = "bb-intro";
 
+/** Dock travel time — must match the .loader-word transition in globals.css. */
+const DOCK_MS = 1600;
+
 // dev-only replay control — resolved at build time, same on server and client
 const SHOW_REPLAY = process.env.NODE_ENV === "development";
 
@@ -78,35 +81,35 @@ export default function Loader() {
     const run = async () => {
       // guides are already drawing (CSS). Wait for the display font so the
       // draft is the real glyph, not a fallback that swaps mid-act.
-      await Promise.race([fontsReady, new Promise((r) => setTimeout(r, 700))]);
+      await Promise.race([fontsReady, new Promise((r) => setTimeout(r, 1000))]);
 
       // 1a — draft: the hollow B surfaces inside its guides
       await animateScoped(
         "[data-b1-outline]",
         { opacity: 1, filter: ["blur(5px)", "blur(0px)"] },
-        { duration: 0.35, ease: EASE_OUT }
+        { duration: 0.5, ease: EASE_OUT }
       );
 
       // 1b — print: the scan-line inks the fill in as it passes
       root.dataset.phase = "ink";
       const scanDist = b1.offsetHeight;
-      animateScoped("[data-scan]", { opacity: 1 }, { duration: 0.1 });
+      animateScoped("[data-scan]", { opacity: 1 }, { duration: 0.15 });
       animateScoped(
         "[data-scan]",
         { transform: ["translateY(0px)", `translateY(${scanDist}px)`] },
-        { duration: 0.6, ease: EASE_IN_OUT }
+        { duration: 0.85, ease: EASE_IN_OUT }
       );
       await animateScoped(
         "[data-b1-fill]",
         { clipPath: ["inset(0 0 100% 0)", "inset(0 0 -8% 0)"] },
-        { duration: 0.6, ease: EASE_IN_OUT }
+        { duration: 0.85, ease: EASE_IN_OUT }
       );
-      animateScoped("[data-scan]", { opacity: 0 }, { duration: 0.18 });
-      animateScoped("[data-b1-outline]", { opacity: 0 }, { duration: 0.25 });
+      animateScoped("[data-scan]", { opacity: 0 }, { duration: 0.25 });
+      animateScoped("[data-b1-outline]", { opacity: 0 }, { duration: 0.35 });
       animateScoped(
         "[data-guides]",
         { opacity: 0 },
-        { duration: 0.35, ease: EASE_OUT }
+        { duration: 0.5, ease: EASE_OUT }
       );
 
       // 2 — mirrored B flies in and butts heads
@@ -117,7 +120,7 @@ export default function Loader() {
           transform: ["translateX(240px)", "translateX(0px)"],
           filter: ["blur(14px)", "blur(0px)"],
         },
-        { duration: 0.45, ease: [0.3, 0, 0.2, 1] }
+        { duration: 0.65, ease: [0.3, 0, 0.2, 1] }
       );
 
       // impact: a jolt through both letters (no seam flash)
@@ -125,10 +128,10 @@ export default function Loader() {
       await animateScoped("[data-b2]", { x: [5, 0] }, { type: "spring", stiffness: 700, damping: 14 });
 
       // 3 — hold on the monogram until assets are actually in
-      await Promise.all([loaded, new Promise((r) => setTimeout(r, 250))]);
+      await Promise.all([loaded, new Promise((r) => setTimeout(r, 400))]);
 
       // 4 — split: "room" born from the seam, "uilds" extends right
-      animateScoped("[data-label]", { opacity: 0, y: -8 }, { duration: 0.3, ease: EASE_OUT });
+      animateScoped("[data-label]", { opacity: 0, y: -8 }, { duration: 0.4, ease: EASE_OUT });
       animateScoped(
         "[data-room]",
         { maxWidth: [0, roomW], opacity: 1, filter: ["blur(10px)", "blur(0px)"] },
@@ -140,14 +143,13 @@ export default function Loader() {
         { type: "spring", stiffness: 210, damping: 22, delay: 0.08 }
       );
 
-      // 5 — measure, then let the page rise beneath the travel
+      // 5 — settle layout, then let the page rise beneath the travel
       // ("none", not "" — the pre-paint CSS collapse would re-apply)
       room.style.maxWidth = "none";
       uilds.style.maxWidth = "none";
       await new Promise((r) =>
         requestAnimationFrame(() => requestAnimationFrame(r))
       );
-      const from = word.getBoundingClientRect();
 
       document.documentElement.dataset.intro = "rise";
       document.body.style.overflow = "";
@@ -157,27 +159,42 @@ export default function Loader() {
       animateScoped(
         "[data-sweep]",
         { opacity: [0, 1, 1, 0], transform: ["translateX(0vw)", "translateX(108vw)"] },
-        { duration: 1, ease: [0.6, 0, 0.2, 1], times: [0, 0.1, 0.85, 1] }
+        { duration: 1.4, ease: [0.6, 0, 0.2, 1], times: [0, 0.1, 0.85, 1] }
       );
-      // the veil lifts fully first — the wordmark holds dead center over the
-      // revealed page, so the travel visibly starts from the middle
-      await animateScoped("[data-veil]", { opacity: 0 }, { duration: 0.7, ease: EASE_OUT });
+      // the veil lifts while the wordmark is mid-flight — one gesture, the
+      // page surfaces beneath the travel
+      animateScoped("[data-veil]", { opacity: 0 }, { duration: 1, ease: EASE_OUT });
 
-      // 6 — the dock: from the middle of the screen into the nav logo slot
-      // (FLIP) while the page elements are still rising beneath it.
+      // 6 — the dock: a measured FLIP from mid-screen into the nav logo slot,
+      // one element traveling as a single transform. CSS owns the transition
+      // (.loader-word / [data-dock]); we only measure and set the deltas.
       if (navMark) {
+        const from = word.getBoundingClientRect();
         const to = navMark.getBoundingClientRect();
-        word.style.transformOrigin = "left top";
-        const s = to.width / from.width;
-        await animateScoped(
-          "[data-word]",
-          {
-            transform: `translate(${to.left - from.left}px, ${
-              to.top - from.top
-            }px) scale(${s})`,
-          },
-          { duration: 1.15, ease: EASE_IN_OUT, delay: 0.2 }
-        );
+        const end = getComputedStyle(navMark.closest(".nav-logo") ?? navMark);
+        const s =
+          parseFloat(end.fontSize) / parseFloat(getComputedStyle(word).fontSize);
+        const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+        const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+        word.style.setProperty("--dock-x", `${dx}px`);
+        word.style.setProperty("--dock-y", `${dy}px`);
+        word.style.setProperty("--dock-s", `${s}`);
+        // typography interpolates in parallel with the travel. Length values
+        // are divided by s — the transform scale shrinks them again visually,
+        // so the on-screen result lands exactly on the nav's computed values.
+        word.style.letterSpacing = `${parseFloat(end.letterSpacing) / s || 0}px`;
+        word.style.fontWeight = end.fontWeight;
+        word.style.color = end.color;
+        root.dataset.dock = "true";
+        await new Promise<void>((resolve) => {
+          const fallback = setTimeout(resolve, DOCK_MS + 100);
+          word.addEventListener("transitionend", (e) => {
+            if (e.target !== word || e.propertyName !== "transform") return;
+            clearTimeout(fallback);
+            resolve();
+          });
+        });
+        // instant swap — B always sat in its true layout slot, so no drift
         navMark.style.opacity = "";
         word.style.visibility = "hidden";
       } else {
@@ -187,7 +204,7 @@ export default function Loader() {
       // after the rise animations settle, drop the gate for good
       setTimeout(() => {
         document.documentElement.dataset.intro = "done";
-      }, 1400);
+      }, 1800);
     };
 
     run();

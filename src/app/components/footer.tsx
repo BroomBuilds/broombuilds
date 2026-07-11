@@ -7,10 +7,11 @@ const MARQUEE = [
   "Websites",
   "Landing pages",
   "Web apps",
-  "Brand systems",
-  "SEO",
-  "Performance",
-  "AI components",
+  "Brand & identity",
+  "Get found on Google",
+  "Get recommended by AI",
+  "Speed & more sales",
+  "AI features",
 ];
 
 export default function Footer() {

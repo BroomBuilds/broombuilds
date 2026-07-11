@@ -261,12 +261,97 @@ html[data-intro="rise"] .intro-rise {
 
 /* ---------- calendly inline shell ---------- */
 
-.calendly-shell {
-  min-height: 700px;
-  border-radius: 12px;
-  border: 1px solid var(--hairline);
-  background: var(--ink-2);
+.calendly-frame {
+  margin: 0 auto;
+  border-radius: 14px;
   overflow: hidden;
+  background: var(--ink-2);
+  border: 1px solid color-mix(in srgb, var(--bone) 12%, transparent);
+  box-shadow: 0 24px 64px -24px rgba(0, 0, 0, 0.55);
+}
+.calendly-frame-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  background: color-mix(in srgb, var(--ink-2) 88%, black);
+  border-bottom: 1px solid color-mix(in srgb, var(--bone) 8%, transparent);
+}
+.calendly-frame-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--bone) 20%, transparent);
+}
+.calendly-frame-dot:first-child {
+  background: var(--seam);
+}
+.calendly-frame-label {
+  margin-left: 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--bone) 40%, transparent);
+}
+/* tall enough that month grid + timezone picker are visible together; the
+   widget mounts into .calendly-inner (taller still), so the scroll — and
+   the scrollbar — belong to the shell, not the cross-origin iframe */
+.calendly-shell {
+  height: 600px;
+  background: var(--ink-2);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--seam) 55%, var(--bone) 20%) transparent;
+}
+.calendly-shell::-webkit-scrollbar {
+  width: 6px;
+}
+.calendly-shell::-webkit-scrollbar-track {
+  background: transparent;
+}
+.calendly-shell::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--seam) 55%, var(--bone) 20%);
+  border-radius: 999px;
+}
+.calendly-shell::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--seam) 80%, var(--bone) 20%);
+}
+.calendly-inner {
+  height: 980px;
+}
+@media (max-width: 640px) {
+  .calendly-shell {
+    height: 520px;
+  }
+  .calendly-inner {
+    height: 1050px;
+  }
+}
+/* Calendly's background/text/primary_color URL theming is a paid-plan-only
+   feature — on free plans it's silently ignored and the widget renders its
+   default white UI. This filter forces a dark look client-side instead:
+   invert flips the white page to near-black, hue-rotate corrects hues back
+   (Calendly's blue lands close to --seam). Their own icons/logo invert too,
+   which is an acceptable tradeoff for a consistently dark embed. */
+.calendly-shell iframe,
+.calendly-popup-content iframe {
+  color-scheme: dark;
+  /* Tuned by eye against the live widget. The date number is white-ish
+     composited over Calendly's blue circle, so after inversion both land in
+     the same midrange — contrast(1.85) is what pulls them apart: numbers
+     drop to a deep blue, circles rise to light periwinkle. hue-rotate(200)
+     keeps the accent periwinkle; pushing further toward --seam's purple
+     (212deg+) turns the circles pink and washes the numbers out again. */
+  filter: invert(0.93) hue-rotate(200deg) saturate(1.8) contrast(1.85) brightness(0.97);
+  background: var(--ink-2);
+}
+/* the popup overlay itself (backdrop + close button) still renders as
+   Calendly's own unstyled chrome — darken the backdrop to match */
+.calendly-overlay {
+  background: rgba(8, 9, 11, 0.85) !important;
+}
+.calendly-popup-content {
+  background: var(--ink-2) !important;
 }
 
 /* ================= nav ================= */
@@ -684,6 +769,9 @@ html[data-intro="rise"] .loader {
 }
 
 .loader-word {
+  --dock-x: 0px;
+  --dock-y: 0px;
+  --dock-s: 1;
   display: flex;
   align-items: baseline;
   font-family: var(--font-display);
@@ -694,6 +782,16 @@ html[data-intro="rise"] .loader {
   line-height: 1;
   white-space: nowrap;
   will-change: transform;
+  /* the dock — pre-declared expo-out; duration mirrored by DOCK_MS in loader.tsx */
+  transition:
+    transform 1600ms cubic-bezier(0.16, 1, 0.3, 1),
+    letter-spacing 1600ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 1600ms cubic-bezier(0.16, 1, 0.3, 1),
+    font-weight 1600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* FLIP play: one element travels center-to-center, transform only */
+.loader[data-dock="true"] .loader-word {
+  transform: translate(var(--dock-x), var(--dock-y)) scale(var(--dock-s));
 }
 .loader-word > span {
   display: inline-block;
@@ -864,7 +962,7 @@ html[data-intro="run"] .loader [data-uilds] {
 .index-row {
   display: grid;
   grid-template-columns: 3.5rem 1fr auto;
-  grid-template-areas: "num name result" "num meta result";
+  grid-template-areas: "num name visit" "num meta visit";
   align-items: baseline;
   column-gap: 24px;
   padding-block: 30px;
@@ -903,25 +1001,24 @@ html[data-intro="run"] .loader [data-uilds] {
   grid-area: meta;
   margin-top: 8px;
 }
-.index-result {
-  grid-area: result;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  text-align: right;
-}
-.index-value {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(1.4rem, 2.6vw, 2rem);
-  letter-spacing: -0.03em;
-  line-height: 1;
-}
-.index-detail {
+.index-visit {
+  grid-area: visit;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--dim);
-  font-size: 0.82rem;
-  margin-top: 6px;
-  max-width: 18ch;
+  transition: color 0.3s ease;
+}
+.index-arrow {
+  display: inline-block;
+  transition: transform 0.3s var(--ease-out);
+}
+.index li[data-on="true"] .index-visit {
+  color: var(--seam);
+}
+.index li[data-on="true"] .index-arrow {
+  transform: translate(3px, -3px);
 }
 
 /* cursor-following preview */
@@ -960,17 +1057,39 @@ html[data-intro="run"] .loader [data-uilds] {
     scale: 0.75;
   }
 }
-.index-cover .work-mark {
-  font-size: clamp(5rem, 9vw, 8rem);
+/* the screenshot glimpse — all four stay mounted, active one shows */
+.index-shot {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+.index-shot[data-on="true"] {
+  opacity: 1;
+}
+.index-shot img {
+  object-fit: cover;
+  object-position: top;
+}
+/* slow living pan inside the frame, so the peek reads as a real page */
+.index-shot[data-on="true"] img {
+  animation: shot-pan 7s cubic-bezier(0.77, 0, 0.175, 1) infinite alternate;
+}
+@keyframes shot-pan {
+  from { transform: scale(1.08) translateY(0); }
+  to { transform: scale(1.08) translateY(-4.5%); }
 }
 .index-cover-label {
   position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 14px;
+  inset: auto 0 0 0;
+  padding-inline: 16px;
+  padding-bottom: 14px;
+  padding-top: 34px;
   font-size: 9.5px;
   letter-spacing: 0.12em;
-  color: var(--dim);
+  color: var(--bone);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
+  background: linear-gradient(transparent, rgba(8, 9, 11, 0.85));
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -980,16 +1099,6 @@ html[data-intro="run"] .loader [data-uilds] {
   .index-preview {
     display: none;
   }
-}
-
-/* the giant typographic mark (index preview + case covers) */
-.work-mark {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(8rem, 18vw, 15rem);
-  line-height: 1;
-  color: color-mix(in srgb, var(--bone) 10%, transparent);
-  user-select: none;
 }
 
 /* ================= services — morphing marker ================= */
@@ -1020,7 +1129,7 @@ html[data-intro="run"] .loader [data-uilds] {
   gap: 20px;
   align-items: baseline;
   width: 100%;
-  padding-block: 20px;
+  padding-block: 26px;
   background: none;
   border: none;
   text-align: left;
@@ -1036,19 +1145,55 @@ html[data-intro="run"] .loader [data-uilds] {
 .svc-name {
   font-family: var(--font-display);
   font-optical-sizing: auto;
-  font-size: clamp(1.3rem, 2.4vw, 1.7rem);
+  font-size: clamp(1.8rem, 4.6vw, 3.4rem);
   font-variation-settings: "wght" 620;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
   color: var(--muted);
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   flex-wrap: wrap;
   transition: color 0.3s ease, font-variation-settings 0.3s ease;
 }
 .svc-row[data-on="true"] .svc-name {
-  color: var(--bone);
+  color: var(--seam);
   font-variation-settings: "wght" 780;
+}
+/* directional ink fill — the seam copy wipes in from the edge the cursor
+   entered (--wipe-hide set by JS), out toward the edge it left */
+.svc-word {
+  position: relative;
+  display: inline-block;
+}
+.svc-word-fill {
+  position: absolute;
+  inset: 0;
+  color: var(--seam);
+  clip-path: var(--wipe-hide, inset(0 100% 0 0));
+  transition: clip-path 0.34s cubic-bezier(0.23, 1, 0.32, 1);
+  pointer-events: none;
+}
+.svc-row[data-on="true"] .svc-word-fill {
+  clip-path: inset(0 0 0 0);
+}
+/* broom-pass streak — fired once per activation via WAAPI, rests invisible */
+.svc-row {
+  position: relative;
+  overflow: hidden;
+}
+.svc-streak {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 40%,
+    color-mix(in srgb, var(--seam) 16%, transparent) 50%,
+    transparent 60%
+  );
+  transform: translateX(-101%);
 }
 .svc-tag {
   color: var(--seam);
@@ -1078,41 +1223,9 @@ html[data-intro="run"] .loader [data-uilds] {
 }
 .svc-desc {
   color: var(--muted);
-  font-size: 1rem;
-  padding-bottom: 22px;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  padding-bottom: 26px;
   max-width: 46rem;
-}
-/* live mini-visual: the load bar hitting 0.6s */
-.svc-bar {
-  position: relative;
-  display: block;
-  height: 2px;
-  width: min(340px, 90%);
-  margin-bottom: 26px;
-  background: var(--hairline);
-}
-.svc-bar-fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 0;
-  background: var(--seam);
-  transition: width 0.2s ease;
-}
-.svc-row[data-on="true"] .svc-bar-fill {
-  width: 60%;
-  transition: width 1.1s var(--ease-out) 0.25s;
-}
-.svc-bar-label {
-  position: absolute;
-  left: calc(60% + 12px);
-  top: -7px;
-  font-size: 10px;
-  color: var(--seam);
-  opacity: 0;
-  transition: opacity 0.3s ease 1s;
-}
-.svc-row[data-on="true"] .svc-bar-label {
-  opacity: 1;
 }
 
 /* ================= process — the sweep ================= */
@@ -1155,32 +1268,57 @@ html[data-intro="run"] .loader [data-uilds] {
   margin: 0;
 }
 
-/* ================= proof — plain claims, no metrics ================= */
+/* ================= proof — the broom assembles the words =================
+   2×2 editorial grid split by a hairline cross; each claim's letters
+   converge from scattered dust as the section scrolls (see proof.tsx). */
 
 .proof-grid {
-  margin-top: 56px;
+  margin-top: 64px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 28px;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid var(--hairline);
 }
 .proof-cell {
-  border-top: 1px solid var(--hairline);
-  padding-top: 18px;
+  padding: 38px clamp(24px, 4vw, 48px) 44px;
+  border-bottom: 1px solid var(--hairline);
+}
+.proof-cell:nth-child(odd) {
+  border-right: 1px solid var(--hairline);
+  padding-left: 0;
+}
+.proof-cell:nth-child(even) {
+  padding-right: 0;
 }
 .proof-word {
   display: block;
-  margin-top: 10px;
+  margin-top: 14px;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(1.4rem, 2.2vw, 1.8rem);
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  font-size: clamp(1.8rem, 3.6vw, 3rem);
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+/* words stay whole on wrap; letters transform independently */
+.proof-w {
+  display: inline-block;
+  white-space: nowrap;
+  margin-right: 0.26em;
+}
+.proof-w:last-child {
+  margin-right: 0;
+}
+.proof-ch {
+  display: inline-block;
+  will-change: transform;
 }
 .proof-desc {
   display: block;
   color: var(--muted);
-  font-size: 0.95rem;
-  margin-top: 10px;
+  font-size: 0.98rem;
+  margin-top: 14px;
+  max-width: 30rem;
 }
 
 /* ================= booking — curtain reveal ================= */
@@ -1234,7 +1372,7 @@ html[data-intro="run"] .loader [data-uilds] {
   85% { opacity: 1; }
   100% { opacity: 0; transform: translateX(100vw); }
 }
-#book .calendly-shell {
+#book .calendly-frame {
   margin-top: 48px;
 }
 .calendly-fallback {
@@ -1374,126 +1512,11 @@ html[data-intro="run"] .loader [data-uilds] {
   padding-bottom: 28px;
 }
 
-/* ================= case study page ================= */
-
-.case {
-  padding-top: 150px;
-}
-.case-crumb {
-  margin-bottom: 36px;
-}
-.case-crumb a {
-  color: var(--dim);
-  text-decoration: none;
-  transition: color 0.25s var(--ease-out);
-}
-.case-crumb a:hover {
-  color: var(--seam);
-}
-.case-title {
-  font-size: clamp(2.6rem, 8vw, 5.5rem);
-  margin-top: 14px;
-}
-.case-problem {
-  color: var(--muted);
-  font-size: clamp(1.05rem, 2vw, 1.3rem);
-  max-width: 42rem;
-  margin-top: 22px;
-}
-.case-hero {
-  margin-top: 56px;
-}
-.case-cover {
-  aspect-ratio: 21 / 9;
-  background:
-    linear-gradient(to right, rgba(236, 230, 218, 0.03) 1px, transparent 1px) 0 0 / 46px 46px,
-    linear-gradient(to bottom, rgba(236, 230, 218, 0.03) 1px, transparent 1px) 0 0 / 46px 46px,
-    var(--ink-2);
-  border: 1px solid color-mix(in srgb, var(--bone) 8%, transparent);
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-.case-body {
-  display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: clamp(40px, 6vw, 80px);
-  margin-top: 72px;
-}
-.case-story p {
-  color: var(--muted);
-  max-width: 62ch;
-  margin-bottom: 1.3em;
-}
-.case-aside {
-  position: sticky;
-  top: 110px;
-  align-self: start;
-}
-.case-metrics {
-  display: flex;
-  flex-direction: column;
-}
-.case-metric {
-  border-top: 1px solid var(--hairline);
-  padding-block: 16px;
-}
-.case-metric dd {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 2rem;
-  letter-spacing: -0.03em;
-  margin-top: 6px;
-}
-.case-scope-head {
-  margin-top: 36px;
-}
-.case-scope {
-  list-style: none;
-  padding: 0;
-  margin-top: 12px;
-}
-.case-scope li {
-  color: var(--muted);
-  padding-block: 6px;
-  border-top: 1px solid color-mix(in srgb, var(--bone) 6%, transparent);
-}
-.case-cta {
-  text-align: center;
-  padding-block: clamp(90px, 14vh, 150px);
-}
-.case-cta h2 {
-  font-size: clamp(1.9rem, 4.5vw, 3rem);
-  margin-bottom: 28px;
-}
-
-/* ================= view transitions ================= */
-
-/* shared-element morph (work preview → case cover) gets the house curve */
-::view-transition-group(*) {
-  animation-duration: 0.55s;
-  animation-timing-function: var(--ease-out);
-}
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 0.3s;
-}
-
 /* ================= responsive ================= */
 
 @media (max-width: 960px) {
-  .proof-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
   .steps {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .case-body {
-    grid-template-columns: 1fr;
-  }
-  .case-aside {
-    position: static;
   }
   .svc-body-inner {
     padding-left: 0;
@@ -1529,11 +1552,10 @@ html[data-intro="run"] .loader [data-uilds] {
   }
   .index-row {
     grid-template-columns: 2.6rem 1fr;
-    grid-template-areas: "num name" "num meta" "num result";
+    grid-template-areas: "num name" "num meta" "num visit";
   }
-  .index-result {
-    align-items: flex-start;
-    text-align: left;
+  .index-visit {
+    justify-self: start;
     margin-top: 12px;
   }
   .index li[data-on="true"] .index-row {
@@ -1544,6 +1566,12 @@ html[data-intro="run"] .loader [data-uilds] {
 @media (max-width: 520px) {
   .proof-grid {
     grid-template-columns: 1fr;
+  }
+  .proof-cell:nth-child(odd) {
+    border-right: none;
+  }
+  .proof-cell {
+    padding-inline: 0;
   }
   .hero-cta .btn {
     width: 100%;
@@ -1595,16 +1623,14 @@ html[data-intro="run"] .loader [data-uilds] {
   .index-row,
   .index-name,
   .svc-body,
-  .svc-bar-fill {
+  .svc-word-fill {
     transition-duration: 0.01s;
+  }
+  .svc-streak {
+    display: none;
   }
   .seam-sweep::after {
     transition: none;
     transform: scaleX(1);
-  }
-  ::view-transition-group(*),
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation: none;
   }
 }

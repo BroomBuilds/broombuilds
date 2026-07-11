@@ -8,7 +8,7 @@ export const CALENDLY_URL = "https://calendly.com/broombuilds/build-plan-call";
 const THEME = new URLSearchParams({
   background_color: "08090b",
   text_color: "ece6da",
-  primary_color: "8b7bff",
+  primary_color: "56186e",
   hide_gdpr_banner: "1",
 });
 

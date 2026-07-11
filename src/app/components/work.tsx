@@ -1,28 +1,24 @@
-/// <reference types="react/canary" />
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ViewTransition } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Image from "next/image";
 import gsap from "gsap";
-import { caseStudies } from "@/content/case-studies";
+import { projects } from "@/content/projects";
 import { scrollState } from "@/lib/scroll";
 import Reveal from "./reveal";
 
-/* Selected work — an interactive index, not cards.
+/* Selected work — an interactive index of live client sites.
    - hovering a row focuses it (variable-weight jump) and dims the rest
-   - a cursor-following preview tilts with pointer velocity
+   - a cursor-following glimpse tilts with pointer velocity and shows the
+     project screenshot slowly panning inside its frame
    - the whole list skews with scroll velocity
-   - clicking morphs the preview into the case-study cover via the native
-     View Transitions API (same `cover-<slug>` name on the detail page).
-   Touch / reduced motion: plain focused rows, no preview, no skew. */
+   - clicking opens the live site in a new tab.
+   Touch / reduced motion: plain focused rows, no glimpse, no skew. */
 export default function Work() {
   const root = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(-1);
-  const pathname = usePathname();
 
   useEffect(() => {
     const mm = gsap.matchMedia();
@@ -43,7 +39,7 @@ export default function Work() {
       section.addEventListener("pointermove", onMove, { passive: true });
 
       const tick = () => {
-        // preview chases the cursor; its lag is what the tilt reads
+        // glimpse chases the cursor; its lag is what the tilt reads
         const dx = tx - px;
         px += dx * 0.14;
         py += (ty - py) * 0.14;
@@ -74,8 +70,6 @@ export default function Work() {
     return () => mm.revert();
   }, []);
 
-  const current = active >= 0 ? caseStudies[active] : null;
-
   return (
     <section
       className="section wrap work"
@@ -87,8 +81,7 @@ export default function Work() {
         <p className="label">Selected work</p>
         <h2>Proof, not promises.</h2>
         <p className="section-sub">
-          Every project below shipped with one job: turn attention into
-          outcomes. The numbers are the story.
+          Real projects, live on the internet. Hover to peek, click to visit.
         </p>
       </Reveal>
 
@@ -98,44 +91,39 @@ export default function Work() {
         data-focused={active >= 0}
         onPointerLeave={() => setActive(-1)}
       >
-        {caseStudies.map((c, i) => (
-          <li key={c.slug} data-on={active === i}>
-            <Link
-              href={`/work/${c.slug}`}
+        {projects.map((p, i) => (
+          <li key={p.slug} data-on={active === i}>
+            <a
+              href={p.url}
+              target="_blank"
+              rel="noopener noreferrer"
               className="index-row"
               onPointerEnter={() => setActive(i)}
               onFocus={() => setActive(i)}
-              /* unmount the preview before the case page mounts its
-                 cover-<slug> ViewTransition — two mounted ViewTransitions
-                 with the same name are not supported */
-              onClick={() => setActive(-1)}
             >
               <span className="index-num label">{String(i + 1).padStart(2, "0")}</span>
-              <span className="index-name">{c.client}</span>
-              <span className="index-meta label">
-                {c.sector} · {c.year}
+              <span className="index-name">{p.client}</span>
+              <span className="index-meta label">{p.sector}</span>
+              <span className="index-visit label" aria-hidden>
+                Visit <span className="index-arrow">↗</span>
               </span>
-              <span className="index-result">
-                <span className="index-value">{c.result}</span>
-                <span className="index-detail">{c.resultDetail}</span>
-              </span>
-            </Link>
+            </a>
           </li>
         ))}
       </ul>
 
       <div className="index-preview" ref={previewRef} data-show={active >= 0} aria-hidden>
-        {/* shared name only while home is the active route — Next keeps this
-            page mounted in a hidden <Activity> on case pages, where a named
-            ViewTransition would clash with the case cover */}
-        {current && (
-          <ViewTransition name={pathname === "/" ? `cover-${current.slug}` : undefined}>
-            <div className="index-cover">
-              <span className="work-mark">{current.mark}</span>
-              <span className="index-cover-label label">{current.problem}</span>
+        <div className="index-cover">
+          {/* all four screenshots stay mounted so the first hover never flashes */}
+          {projects.map((p, i) => (
+            <div key={p.slug} className="index-shot" data-on={active === i}>
+              <Image src={p.image} alt="" fill sizes="340px" />
             </div>
-          </ViewTransition>
-        )}
+          ))}
+          {active >= 0 && (
+            <span className="index-cover-label label">{projects[active].line}</span>
+          )}
+        </div>
       </div>
     </section>
   );

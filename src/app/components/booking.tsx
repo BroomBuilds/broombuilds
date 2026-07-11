@@ -64,16 +64,29 @@ export default function Booking() {
           No pitch deck, no pressure. Bring the site you have — leave with a
           plan for the one you need.
         </p>
-        <div ref={shell} className="calendly-shell" aria-label="Calendly scheduling widget">
-          {failed && (
-            <p className="calendly-fallback">
-              The scheduler didn&apos;t load —{" "}
-              <a href={CALENDLY_THEMED_URL} target="_blank" rel="noopener noreferrer">
-                book directly on Calendly
-              </a>
-              .
-            </p>
-          )}
+        <div className="calendly-frame">
+          <div className="calendly-frame-bar" aria-hidden>
+            <span className="calendly-frame-dot" />
+            <span className="calendly-frame-dot" />
+            <span className="calendly-frame-dot" />
+            <span className="calendly-frame-label">book-a-call.calendly</span>
+          </div>
+          {/* the widget mounts into .calendly-inner, taller than the shell —
+              the shell scrolls, so the scrollbar is ours to style (the
+              iframe's own cross-origin scrollbar can't be) */}
+          <div className="calendly-shell" aria-label="Calendly scheduling widget">
+            <div ref={shell} className="calendly-inner">
+              {failed && (
+                <p className="calendly-fallback">
+                  The scheduler didn&apos;t load —{" "}
+                  <a href={CALENDLY_THEMED_URL} target="_blank" rel="noopener noreferrer">
+                    book directly on Calendly
+                  </a>
+                  .
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </section>
