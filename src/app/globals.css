@@ -669,15 +669,18 @@ html[data-intro="rise"] .intro-rise {
   display: block;
 }
 
-/* the purple phrase — seam ink, with a broom-stroke underline that draws
-   itself once the intro rise settles */
-.seam-sweep {
+/* ---------- the rotating build-list ----------
+   Every word ships in the markup (crawlers/AI read the sr-only list); the
+   visible ones stack in one grid cell and take turns via a single keyframe
+   offset by --rot-i, so it's pure CSS — no JS, no layout shift. The seam
+   underline is drawn once on the container and the words sweep past it. */
+.hero-rotator {
   position: relative;
-  font-style: normal;
-  color: var(--seam);
-  white-space: nowrap;
+  width: max-content;
+  max-width: 100%;
+  margin-inline: auto;
 }
-.seam-sweep::after {
+.hero-rotator::after {
   content: "";
   position: absolute;
   left: 0;
@@ -688,12 +691,42 @@ html[data-intro="rise"] .intro-rise {
   box-shadow: 0 0 14px 1px color-mix(in srgb, var(--seam) 55%, transparent);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.9s var(--ease-out);
+  transition: transform 0.9s var(--ease-out) 0.3s;
 }
-html[data-intro="done"] .seam-sweep::after,
-html:not([data-intro]) .seam-sweep::after {
+html[data-intro="rise"] .hero-rotator::after,
+html[data-intro="done"] .hero-rotator::after,
+html:not([data-intro]) .hero-rotator::after {
   transform: scaleX(1);
 }
+.rot-track {
+  display: inline-grid;
+  /* one cell — the track is as wide as the longest word, so nothing jumps */
+  --rot-step: 2.2s;
+}
+.rot-word {
+  grid-area: 1 / 1;
+  color: var(--seam);
+  white-space: nowrap;
+  animation: rot-cycle calc(var(--rot-n) * var(--rot-step)) var(--ease-out)
+    infinite backwards;
+  animation-delay: calc(var(--rot-i) * var(--rot-step));
+}
+/* One word's slice is 1/6 of the cycle: rise in, hold, sweep out, stay gone.
+   ponytail: percentages are hand-tuned for the 6 words in BUILDS — change the
+   list length and retune the four stops (slice = 100 / count). */
+@keyframes rot-cycle {
+  0% { clip-path: inset(0 0 100% 0); transform: translateY(0.42em); }
+  3%, 13% { clip-path: inset(-25% 0 -25% 0); transform: translateY(0); }
+  16.6% { clip-path: inset(100% 0 0 0); transform: translateY(-0.42em); }
+  16.7%, 100% { clip-path: inset(0 0 100% 0); transform: translateY(0.42em); }
+}
+
+.hero-line {
+  max-width: 34ch;
+  color: var(--dim);
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+}
+
 .hero-cta {
   display: flex;
   gap: 14px;
@@ -701,7 +734,35 @@ html:not([data-intro]) .seam-sweep::after {
   justify-content: center;
 }
 .hero-meta {
-  margin-top: 10px;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.hero-meta a {
+  color: var(--dim);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--dim) 40%, transparent);
+  transition: color 0.25s var(--ease-out), border-color 0.25s var(--ease-out);
+}
+.hero-meta a:hover {
+  color: var(--bone);
+  border-color: var(--seam);
+}
+
+/* visually hidden, still read by screen readers and crawlers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* bobbing scroll cue */
@@ -942,6 +1003,16 @@ html[data-intro="run"] .loader [data-uilds] {
   max-width: 36rem;
   margin-top: 18px;
   font-size: 1.05rem;
+}
+.book-direct {
+  color: var(--bone);
+  text-decoration: none;
+  border-bottom: 1px solid var(--seam);
+  white-space: nowrap;
+  transition: color 0.25s var(--ease-out);
+}
+.book-direct:hover {
+  color: var(--seam);
 }
 
 /* ================= work — interactive index ================= */
@@ -1268,59 +1339,6 @@ html[data-intro="run"] .loader [data-uilds] {
   margin: 0;
 }
 
-/* ================= proof — the broom assembles the words =================
-   2×2 editorial grid split by a hairline cross; each claim's letters
-   converge from scattered dust as the section scrolls (see proof.tsx). */
-
-.proof-grid {
-  margin-top: 64px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  border-top: 1px solid var(--hairline);
-}
-.proof-cell {
-  padding: 38px clamp(24px, 4vw, 48px) 44px;
-  border-bottom: 1px solid var(--hairline);
-}
-.proof-cell:nth-child(odd) {
-  border-right: 1px solid var(--hairline);
-  padding-left: 0;
-}
-.proof-cell:nth-child(even) {
-  padding-right: 0;
-}
-.proof-word {
-  display: block;
-  margin-top: 14px;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(1.8rem, 3.6vw, 3rem);
-  letter-spacing: -0.03em;
-  line-height: 1.08;
-  text-wrap: balance;
-}
-/* words stay whole on wrap; letters transform independently */
-.proof-w {
-  display: inline-block;
-  white-space: nowrap;
-  margin-right: 0.26em;
-}
-.proof-w:last-child {
-  margin-right: 0;
-}
-.proof-ch {
-  display: inline-block;
-  will-change: transform;
-}
-.proof-desc {
-  display: block;
-  color: var(--muted);
-  font-size: 0.98rem;
-  margin-top: 14px;
-  max-width: 30rem;
-}
-
 /* ================= booking — curtain reveal ================= */
 
 .book {
@@ -1483,6 +1501,11 @@ html[data-intro="run"] .loader [data-uilds] {
   border-top: 1px solid rgba(255, 255, 255, 0.22);
   margin-top: 48px;
 }
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .footer-mail {
   color: #fff;
   text-decoration: none;
@@ -1564,15 +1587,6 @@ html[data-intro="run"] .loader [data-uilds] {
 }
 
 @media (max-width: 520px) {
-  .proof-grid {
-    grid-template-columns: 1fr;
-  }
-  .proof-cell:nth-child(odd) {
-    border-right: none;
-  }
-  .proof-cell {
-    padding-inline: 0;
-  }
   .hero-cta .btn {
     width: 100%;
     justify-content: center;
@@ -1629,8 +1643,15 @@ html[data-intro="run"] .loader [data-uilds] {
   .svc-streak {
     display: none;
   }
-  .seam-sweep::after {
+  .hero-rotator::after {
     transition: none;
     transform: scaleX(1);
+  }
+  /* no cycling — the first word simply stands */
+  .rot-word {
+    animation: none;
+  }
+  .rot-word:not(:first-child) {
+    display: none;
   }
 }

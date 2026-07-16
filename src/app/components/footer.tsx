@@ -38,9 +38,14 @@ export default function Footer() {
         <KineticMark />
 
         <div className="footer-meta">
-          <a className="footer-mail" href={`mailto:${site.email}`}>
-            {site.email}
-          </a>
+          <span className="footer-contact">
+            <a className="footer-mail" href={`mailto:${site.email}`}>
+              {site.email}
+            </a>
+            <a className="footer-mail" href={`tel:${site.phoneHref}`}>
+              {site.phone}
+            </a>
+          </span>
           <nav className="footer-socials" aria-label="Social links">
             {Object.entries(site.socials).map(([k, url]) => (
               <a key={k} href={url} target="_blank" rel="noopener noreferrer">

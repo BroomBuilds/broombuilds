@@ -1,6 +1,5 @@
 /* Calendly — the primary conversion path. One constant, swappable. */
 
-// TODO: replace with the real Calendly event link before launch.
 export const CALENDLY_URL = "https://calendly.com/broombuilds/build-plan-call";
 
 /* Calendly theme params take hex WITHOUT the leading "#".

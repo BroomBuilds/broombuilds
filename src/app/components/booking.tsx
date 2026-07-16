@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CALENDLY_THEMED_URL, loadCalendly } from "@/lib/calendly";
+import { site } from "@/lib/site";
 
 /* The money section. Enters via a seam curtain sweep (the broom again) —
    an IO flips data-reveal and CSS runs the wipe. Inline Calendly is
@@ -59,10 +60,18 @@ export default function Booking() {
       <span className="book-curtain" aria-hidden />
       <div className="wrap book-inner">
         <p className="label">Book a call</p>
-        <h2>Twenty minutes. We&apos;ll tell you exactly what we&apos;d build.</h2>
+        <h2>Thirty minutes. We&apos;ll tell you exactly what we&apos;d build.</h2>
         <p className="section-sub">
           No pitch deck, no pressure. Bring the site you have — leave with a
-          plan for the one you need.
+          plan for the one you need. Prefer to skip the form?{" "}
+          <a className="book-direct" href={`tel:${site.phoneHref}`}>
+            Call {site.phone}
+          </a>{" "}
+          or email{" "}
+          <a className="book-direct" href={`mailto:${site.email}`}>
+            {site.email}
+          </a>
+          .
         </p>
         <div className="calendly-frame">
           <div className="calendly-frame-bar" aria-hidden>
