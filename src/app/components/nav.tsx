@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Wordmark from "./wordmark";
 import Magnetic from "./magnetic";
@@ -238,6 +239,14 @@ export default function Nav() {
 
       <div className="nav-inner wrap">
         <Link href="/" className="nav-logo" aria-label="BroomBuilds — home">
+          <Image
+            src="/mascot.png"
+            alt=""
+            width={30}
+            height={30}
+            className="nav-mascot"
+            priority
+          />
           <Wordmark />
         </Link>
         {/* logo stays out of the rise — the intro's FLIP delivers it */}

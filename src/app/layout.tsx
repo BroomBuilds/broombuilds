@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     default: `${site.name} — ${site.tagline}`,
     template: `%s — ${site.name}`,
   },
-  description: site.description,
+  description: site.metaDescription,
   keywords: [...site.keywords],
   applicationName: site.name,
   authors: [{ name: site.name, url: SITE_URL }],
@@ -44,13 +44,13 @@ export const metadata: Metadata = {
     url: SITE_URL,
     siteName: site.name,
     title: `${site.name} — ${site.tagline}`,
-    description: site.description,
+    description: site.metaDescription,
     // og image auto-linked from app/opengraph-image.tsx
   },
   twitter: {
     card: "summary_large_image",
     title: `${site.name} — ${site.tagline}`,
-    description: site.description,
+    description: site.metaDescription,
     creator: site.twitter,
   },
   robots: {
@@ -101,7 +101,7 @@ const jsonLd = {
       foundingDate: site.founded,
       email: site.email,
       telephone: site.phone,
-      logo: `${SITE_URL}/icon`,
+      logo: `${SITE_URL}/icon.png`,
       sameAs: Object.values(site.socials),
       contactPoint: {
         "@type": "ContactPoint",
@@ -165,7 +165,7 @@ export default function RootLayout({
       className={`${bricolage.variable} ${inter.variable} ${jetbrains.variable}`}
       suppressHydrationWarning
     >
-      <body>
+      <body suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: introScript }} />
         <script
           type="application/ld+json"

@@ -11,8 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#08090b",
     theme_color: "#08090b",
     icons: [
-      // Served by app/icon.tsx (generated). One scalable source is enough here.
-      { src: "/icon", sizes: "any", type: "image/png" },
+      // Served by app/icon.png (Next metadata file convention).
+      { src: "/icon.png", sizes: "any", type: "image/png" },
     ],
   };
 }

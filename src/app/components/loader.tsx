@@ -61,9 +61,11 @@ export default function Loader() {
     room.style.maxWidth = "0px";
     uilds.style.maxWidth = "0px";
 
-    // The nav logo slot stays empty until the wordmark docks into it.
+    // The nav logo slots stay empty until the loader wordmark + mascot dock in.
     const navMark = document.querySelector<HTMLElement>(".nav-logo .wordmark");
     if (navMark) navMark.style.opacity = "0";
+    const navMascot = document.querySelector<HTMLElement>(".nav-logo .nav-mascot");
+    if (navMascot) navMascot.style.opacity = "0";
 
     /* --- real load progress: fonts + document, 3s safety cap ----------- */
     const fontsReady = document.fonts.ready.then(() => {});
@@ -127,6 +129,14 @@ export default function Loader() {
       animateScoped("[data-b1]", { x: [-5, 0] }, { type: "spring", stiffness: 700, damping: 14 });
       await animateScoped("[data-b2]", { x: [5, 0] }, { type: "spring", stiffness: 700, damping: 14 });
 
+      // the mascot hops onto the finished monogram and stays — the brand's
+      // face, riding above the wordmark all the way to the nav dock
+      animateScoped(
+        "[data-mascot]",
+        { opacity: 1, y: [-8, 0], scale: [0.7, 1] },
+        { type: "spring", stiffness: 320, damping: 18 }
+      );
+
       // 3 — hold on the monogram until assets are actually in
       await Promise.all([loaded, new Promise((r) => setTimeout(r, 400))]);
 
@@ -186,7 +196,29 @@ export default function Loader() {
         word.style.fontWeight = end.fontWeight;
         word.style.color = end.color;
         root.dataset.dock = "true";
-        await new Promise<void>((resolve) => {
+
+        // the mascot flies the same FLIP into the nav's mascot slot, in step
+        // with the wordmark. Motion owns this one (the img carries a transform
+        // from its entrance, so a CSS-var handoff would fight it); easing +
+        // duration mirror the .loader-word transition so they land together.
+        const mascot = q("[data-mascot]");
+        let mascotDock: Promise<void> = Promise.resolve();
+        if (navMascot && mascot) {
+          const mFrom = mascot.getBoundingClientRect();
+          const mTo = navMascot.getBoundingClientRect();
+          const ms = mTo.width / mFrom.width;
+          const mdx = mTo.left + mTo.width / 2 - (mFrom.left + mFrom.width / 2);
+          const mdy = mTo.top + mTo.height / 2 - (mFrom.top + mFrom.height / 2);
+          mascotDock = new Promise<void>((resolve) => {
+            animateScoped(
+              "[data-mascot]",
+              { x: mdx, y: mdy, scale: ms },
+              { duration: DOCK_MS / 1000, ease: [0.16, 1, 0.3, 1] }
+            ).then(() => resolve());
+          });
+        }
+
+        const wordDock = new Promise<void>((resolve) => {
           const fallback = setTimeout(resolve, DOCK_MS + 100);
           word.addEventListener("transitionend", (e) => {
             if (e.target !== word || e.propertyName !== "transform") return;
@@ -194,11 +226,22 @@ export default function Loader() {
             resolve();
           });
         });
-        // instant swap — B always sat in its true layout slot, so no drift
+        await Promise.all([wordDock, mascotDock]);
+        // instant swap — both sat in their true layout slots, so no drift.
+        // kill the nav-mascot's fade-in transition so the handoff is a cut,
+        // not a 0.6s crossfade that would flash a gap under the loader mascot.
         navMark.style.opacity = "";
+        if (navMascot) {
+          navMascot.style.transition = "none";
+          navMascot.style.opacity = "1";
+        }
         word.style.visibility = "hidden";
+        if (mascot) mascot.style.visibility = "hidden";
       } else {
-        await animateScoped("[data-word]", { opacity: 0 }, { duration: 0.4, ease: EASE_OUT });
+        await Promise.all([
+          animateScoped("[data-word]", { opacity: 0 }, { duration: 0.4, ease: EASE_OUT }),
+          animateScoped("[data-mascot]", { opacity: 0 }, { duration: 0.4, ease: EASE_OUT }),
+        ]);
       }
 
       // after the rise animations settle, drop the gate for good
@@ -224,6 +267,11 @@ export default function Loader() {
         <div className="loader-veil" data-veil />
 
         <div className="loader-stage">
+          {/* rides above the monogram the whole time, then docks into the nav.
+             wrapper owns centering; the img owns the timeline transform. */}
+          <span className="loader-mascot" aria-hidden>
+            <img className="loader-mascot-img" data-mascot src="/mascot.png" alt="" />
+          </span>
           <div className="loader-word" data-word>
             <span className="loader-b1" data-b1>
               <svg className="loader-guides" data-guides viewBox="0 0 100 100">
@@ -256,6 +304,7 @@ export default function Loader() {
           </span>
         </div>
 
+        {/* light stroke wipes the veil away as the page rises */}
         <span className="loader-sweep" data-sweep />
       </div>
 

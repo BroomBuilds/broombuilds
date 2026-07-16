@@ -117,7 +117,12 @@ export default function Work() {
           {/* all four screenshots stay mounted so the first hover never flashes */}
           {projects.map((p, i) => (
             <div key={p.slug} className="index-shot" data-on={active === i}>
-              <Image src={p.image} alt="" fill sizes="340px" />
+              <Image
+                src={p.image}
+                alt={`${p.client} — ${p.sector} website built by BroomBuilds`}
+                fill
+                sizes="340px"
+              />
             </div>
           ))}
           {active >= 0 && (

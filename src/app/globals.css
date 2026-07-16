@@ -416,11 +416,29 @@ html[data-intro="rise"] .intro-rise {
 
 .nav-logo {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 25px;
   letter-spacing: -0.02em;
   text-decoration: none;
+}
+/* mascot mark sits left of the wordmark; it stays hidden through the intro
+   and parks in exactly as the page rises — reading as the same rider that
+   just swept the veil away. Visible with no JS / on return visits. */
+.nav-mascot {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease-out);
+}
+html[data-intro="rise"] .nav-mascot,
+html[data-intro="done"] .nav-mascot,
+html:not([data-intro]) .nav-mascot {
+  opacity: 1;
 }
 /* opening the menu splits the wordmark halves with a soft seam glow */
 .nav-logo .wm-broom,
@@ -827,6 +845,26 @@ html[data-intro="rise"] .loader {
   flex-direction: column;
   align-items: center;
   gap: clamp(18px, 4vh, 36px);
+}
+/* wrapper rides above the monogram; absolute so it never shifts the draft
+   off-center. It owns centering (translateX(-50%)); the img owns the timeline
+   transform (entrance + the FLIP dock into the nav), so the two never fight. */
+.loader-mascot {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  margin-bottom: clamp(20px, 5vh, 48px);
+  width: clamp(84px, 9vw, 132px);
+  pointer-events: none;
+}
+.loader-mascot-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: 0;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 12px 30px color-mix(in srgb, var(--seam) 40%, transparent));
 }
 
 .loader-word {
@@ -1653,5 +1691,125 @@ html[data-intro="run"] .loader [data-uilds] {
   }
   .rot-word:not(:first-child) {
     display: none;
+  }
+}
+
+/* ---------- 404 / error screens (shared by not-found.tsx + error.tsx) ---- */
+
+.nf {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 120px 0;
+}
+/* brand bar, pinned top-left like the site nav */
+.nf-nav {
+  position: absolute;
+  top: clamp(20px, 4vh, 36px);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: flex-start;
+}
+.nf-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+.nf-brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+.nf-tag {
+  color: var(--dim);
+}
+.nf-code {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 2vw, 20px);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(88px, 22vw, 260px);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+/* rise once on load, then breathe forever — the second animation is delayed
+   past the first so the two never fight over transform. */
+.nf-d {
+  display: inline-block;
+  color: #fff;
+  animation:
+    nf-rise 0.9s var(--ease-out) backwards,
+    nf-float 6s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.12s), calc(var(--i) * 0.2s + 0.9s);
+}
+.nf-mascot {
+  width: clamp(120px, 24vw, 230px);
+  height: auto;
+  animation:
+    nf-rise 0.9s var(--ease-out) backwards,
+    nf-float 6s ease-in-out 0.9s infinite;
+}
+@keyframes nf-rise {
+  from {
+    transform: translateY(40%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes nf-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3%);
+  }
+}
+.nf-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(19px, 4.2vw, 44px);
+  letter-spacing: -0.02em;
+  white-space: nowrap; /* keep it on one line at every width */
+}
+.nf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 10px;
+}
+/* the primary way out — sized up so it's the first thing the eye lands on */
+.nf-home {
+  font-size: 1.05rem;
+  padding: 16px 34px;
+}
+.nf-links {
+  display: flex;
+  gap: 22px;
+  margin-top: 18px;
+}
+.nf-links a {
+  color: var(--dim);
+  transition: color 0.3s var(--ease-out);
+}
+.nf-links a:hover {
+  color: var(--seam);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nf-d,
+  .nf-mascot {
+    animation: none;
   }
 }

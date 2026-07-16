@@ -32,7 +32,7 @@ export default function OpengraphImage() {
             fontWeight: 500,
           }}
         >
-          BroomBuilds · Design &amp; Build Studio
+          BroomBuilds · Design, Build &amp; AI Automation Studio
         </div>
         <div
           style={{
@@ -55,7 +55,7 @@ export default function OpengraphImage() {
           }}
         >
           <div style={{ display: "flex", fontSize: 30, color: "#B9B4AA", maxWidth: 760 }}>
-            Websites that load in under a second and turn visitors into booked calls.
+            Websites, web apps &amp; AI automations that load in under a second and turn visitors into booked calls.
           </div>
           <div style={{ display: "flex", fontSize: 24, color: "#56186E" }}>
             broombuilds.com

@@ -21,6 +21,10 @@ export const site = {
     "We design and build websites, web apps, and AI automations that load in under a second and turn visitors into booked calls.",
   description:
     "BroomBuilds is a design, build, and AI automation studio. We design and build websites, landing pages, web apps, brand systems, and AI automations — with SEO and performance baked in, so they rank, load in under a second, and turn visitors into booked calls.",
+  /* ~150 chars — the <meta name="description"> snippet. Kept short so Google
+     shows it whole; `description` above stays long for OG/schema/manifest. */
+  metaDescription:
+    "Design, build & AI automation studio. Fast websites, landing pages, web apps & AI automations — built to rank, load in under a second, and book you calls.",
   keywords: [
     "BroomBuilds",
     "Broom Builds",
