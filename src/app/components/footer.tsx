@@ -1,7 +1,9 @@
+import Link from "next/link";
 import BookCall from "./book-call";
 import KineticMark from "./kinetic-mark";
 import LocalClock from "./local-clock";
 import { site } from "@/lib/site";
+import { HIRING_DASHBOARD_URL, roles } from "@/content/careers";
 
 const MARQUEE = [
   "Websites",
@@ -35,6 +37,22 @@ export default function Footer() {
       </div>
 
       <div className="wrap">
+        <nav className="footer-nav label" aria-label="Site sections">
+          <Link href="/#work">Work</Link>
+          <Link href="/#services">Services</Link>
+          <Link href="/#process">Process</Link>
+          <Link href="/#team">Team</Link>
+          <Link href="/careers">
+            Careers
+            {roles.length > 0 && (
+              <span className="footer-open">{roles.length} open</span>
+            )}
+          </Link>
+          <a href={HIRING_DASHBOARD_URL} target="_blank" rel="noopener noreferrer">
+            Hiring dashboard ↗
+          </a>
+        </nav>
+
         <KineticMark />
 
         <div className="footer-meta">

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Inter, JetBrains_Mono } from "next/font/google";
 import { site, SITE_URL } from "@/lib/site";
+import { team } from "@/content/team";
 import SmoothScroll from "./components/smooth-scroll";
 import Cursor from "./components/cursor";
 import Dust from "./components/dust";
@@ -117,6 +118,16 @@ const jsonLd = {
         addressCountry: "IN",
       },
       areaServed: "Worldwide",
+      // named crew — entity signal that this is a firm, not a single freelancer
+      numberOfEmployees: {
+        "@type": "QuantitativeValue",
+        value: team.length,
+      },
+      employee: team.map((m) => ({
+        "@type": "Person",
+        name: m.name,
+        jobTitle: m.role,
+      })),
       // GEO: plain-language capability list for AI crawlers & answer engines
       knowsAbout: [
         "web design",
@@ -153,8 +164,16 @@ const jsonLd = {
 
 /* Runs before first paint: decides whether the intro plays. Absent JS,
    the attribute never lands and all content is simply visible.
-   ?loader forces a replay (dev/QA); reduced motion always wins. */
-const introScript = `(function(){try{var f=/[?&]loader/.test(location.search);var skip=matchMedia('(prefers-reduced-motion: reduce)').matches||(!f&&(location.pathname!=='/'||sessionStorage.getItem('bb-intro')));document.documentElement.dataset.intro=skip?'done':'run'}catch(e){document.documentElement.dataset.intro='done'}})()`;
+   ?loader forces a replay (dev/QA); reduced motion always wins.
+
+   INTRO DISABLED — the homepage paints straight away. 'done' is the same
+   state a return visit lands in, so every intro-keyed rule (.intro-rise,
+   .nav-mascot, .hero-rotator::after, .loader) resolves to its finished
+   form, and Loader's effect bails on anything but 'run'.
+   To switch the intro back on: restore the line below and un-comment
+   <Loader /> in components/hero.tsx. Nothing else changes. */
+const introScript = `(function(){try{document.documentElement.dataset.intro='done'}catch(e){}})()`;
+// const introScript = `(function(){try{var f=/[?&]loader/.test(location.search);var skip=matchMedia('(prefers-reduced-motion: reduce)').matches||(!f&&(location.pathname!=='/'||sessionStorage.getItem('bb-intro')));document.documentElement.dataset.intro=skip?'done':'run'}catch(e){document.documentElement.dataset.intro='done'}})()`;
 
 export default function RootLayout({
   children,

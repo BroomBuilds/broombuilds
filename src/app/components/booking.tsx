@@ -29,16 +29,26 @@ export default function Booking() {
       (entries) => {
         if (!entries[0].isIntersecting) return;
         io.disconnect();
-        loadCalendly()
-          .then(() => {
-            window.Calendly?.initInlineWidget({
-              url: CALENDLY_THEMED_URL,
-              parentElement: el,
-            });
-          })
-          .catch(() => setFailed(true));
+        const boot = () =>
+          loadCalendly()
+            .then(() => {
+              window.Calendly?.initInlineWidget({
+                url: CALENDLY_THEMED_URL,
+                parentElement: el,
+              });
+            })
+            .catch(() => setFailed(true));
+        /* Booting the widget is the one genuinely expensive thing left on the
+           page — script eval plus a cross-origin iframe that loads its own
+           app and fonts. At 600px it landed mid-scroll on the last screen
+           before the footer, which is where the hitch was felt. Two screens
+           of lead time plus an idle slot moves that work off the scrolled
+           frames; the timeout keeps it honest if idle never comes. */
+        if ("requestIdleCallback" in window)
+          requestIdleCallback(boot, { timeout: 2000 });
+        else setTimeout(boot, 0);
       },
-      { rootMargin: "600px" }
+      { rootMargin: "1600px" }
     );
     io.observe(el);
     return () => {

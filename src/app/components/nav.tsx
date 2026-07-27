@@ -11,10 +11,14 @@ import { scrollState } from "@/lib/scroll";
 import { site } from "@/lib/site";
 import { EASE_OUT } from "@/lib/motion";
 
-const LINKS = [
+/* `hash` present → same-page glide when we're on "/". Absent (Careers) → a
+   real route change, every time. */
+const LINKS: { href: string; hash?: string; label: string }[] = [
   { href: "/#work", hash: "#work", label: "Work" },
   { href: "/#services", hash: "#services", label: "Services" },
   { href: "/#process", hash: "#process", label: "Process" },
+  { href: "/#team", hash: "#team", label: "Team" },
+  { href: "/careers", label: "Careers" },
   { href: "/#book", hash: "#book", label: "Book a call" },
 ];
 
@@ -32,7 +36,6 @@ export default function Nav() {
   const progressRef = useRef<HTMLSpanElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
-  const previewRef = useRef<HTMLDivElement>(null);
   const openRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(-1);
@@ -99,40 +102,10 @@ export default function Nav() {
     };
   }, [open]);
 
-  /* --- cursor-trailing preview inside the overlay ----------------------- */
-  useEffect(() => {
-    if (!open || reduced) return;
-    if (!window.matchMedia("(pointer: fine)").matches) return;
-    const overlay = overlayRef.current!;
-    const preview = previewRef.current;
-    if (!preview) return;
-
-    let px = 0, py = 0, tx = 0, ty = 0, tilt = 0;
-    const onMove = (e: PointerEvent) => {
-      tx = e.clientX;
-      ty = e.clientY;
-    };
-    overlay.addEventListener("pointermove", onMove, { passive: true });
-
-    let raf = 0;
-    const tick = () => {
-      const dx = tx - px;
-      px += dx * 0.14;
-      py += (ty - py) * 0.14;
-      tilt += (Math.max(-9, Math.min(9, dx * 0.08)) - tilt) * 0.12;
-      preview.style.transform = `translate3d(${px}px, ${py}px, 0) rotate(${tilt}deg)`;
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(raf);
-      overlay.removeEventListener("pointermove", onMove);
-    };
-  }, [open, reduced]);
-
   /* item click → close, then glide (Lenis must be running again first) */
-  const go = useCallback((e: React.MouseEvent, hash: string) => {
+  const go = useCallback((e: React.MouseEvent, hash?: string) => {
     setOpen(false);
+    if (!hash) return; // real route (Careers) — let Link navigate
     if (location.pathname !== "/") return; // case pages: normal navigation
     const target = document.querySelector(hash);
     if (!target) return;
@@ -220,19 +193,6 @@ export default function Nav() {
                 ))}
               </nav>
             </motion.div>
-
-            {!reduced && (
-              <div className="ov-preview" ref={previewRef} data-show={hovered >= 0} aria-hidden>
-                {hovered >= 0 && (
-                  <div className="ov-card" style={{ "--card-i": hovered } as React.CSSProperties}>
-                    <span className="ov-card-mark">
-                      {String(hovered + 1).padStart(2, "0")}
-                    </span>
-                    <span className="ov-card-label label">{LINKS[hovered].label}</span>
-                  </div>
-                )}
-              </div>
-            )}
           </motion.div>
         )}
       </AnimatePresence>

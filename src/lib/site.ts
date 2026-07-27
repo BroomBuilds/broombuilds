@@ -76,5 +76,7 @@ export const sections = [
   { id: "work", label: "Work", priority: 0.9 },
   { id: "services", label: "Services", priority: 0.8 },
   { id: "process", label: "Process", priority: 0.6 },
+  { id: "team", label: "Team", priority: 0.7 },
+  { id: "careers", label: "Careers", priority: 0.7 },
   { id: "book", label: "Book a call", priority: 0.9 },
 ] as const;

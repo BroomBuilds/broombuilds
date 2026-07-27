@@ -1,4 +1,5 @@
-import Loader from "./loader";
+// INTRO DISABLED — see the introScript note in app/layout.tsx to re-enable.
+// import Loader from "./loader";
 import BookCall from "./book-call";
 import { site } from "@/lib/site";
 
@@ -20,7 +21,7 @@ const BUILDS = [
 export default function Hero() {
   return (
     <section className="hero wrap" aria-label="Introduction">
-      <Loader />
+      {/* <Loader /> */}
       <p className="label intro-rise">{site.tagline}</p>
       <h1 className="hero-title">
         <span
