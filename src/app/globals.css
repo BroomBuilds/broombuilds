@@ -216,15 +216,9 @@ html.has-cursor button {
 
 /* ---------- grain ---------- */
 
-/* The overhang only has to cover the keyframe travel, which peaks at 3% of
-   the element's own size. inset:-5% makes the element 110% of the viewport,
-   so 3% of that (3.3vw/vh) still never exposes an edge — and the composited
-   layer drops from 6.25 viewports to 1.21, ~80% less texture to push every
-   frame. It's promoted (will-change) and painted over everything, so that
-   cost is paid on every scrolled frame, footer included. */
 .grain {
   position: fixed;
-  inset: -5%;
+  inset: -75%;
   z-index: 150;
   pointer-events: none;
   opacity: 0.045;
@@ -560,9 +554,7 @@ html:not([data-intro]) .nav-mascot {
   gap: clamp(14px, 3vw, 28px);
   font-family: var(--font-display);
   font-optical-sizing: auto;
-  /* vh term keeps all six items on one screen on short laptops — without it
-     the list overflows the centered flex column and the footer clips */
-  font-size: clamp(1.9rem, min(6.6vw, 8.2vh), 4.4rem);
+  font-size: clamp(2.2rem, 8vw, 5.5rem);
   font-variation-settings: "wght" 640;
   letter-spacing: -0.03em;
   line-height: 1.08;
@@ -621,6 +613,57 @@ html:not([data-intro]) .nav-mascot {
 }
 .ov-socials a:hover {
   color: var(--seam);
+}
+
+/* cursor-trailing preview card */
+.ov-preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  pointer-events: none;
+  will-change: transform;
+}
+.ov-preview[data-show="false"] {
+  visibility: hidden;
+}
+.ov-card {
+  position: relative;
+  width: min(300px, 26vw);
+  aspect-ratio: 4 / 3;
+  transform: translate(40px, -110%);
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--bone) 12%, transparent);
+  background:
+    radial-gradient(
+      120% 120% at calc(20% + var(--card-i) * 20%) 20%,
+      color-mix(in srgb, var(--seam) 38%, transparent),
+      transparent 65%
+    ),
+    var(--ink-2);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  animation: preview-in 0.4s var(--ease-out);
+}
+.ov-card-mark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 5rem;
+  color: color-mix(in srgb, var(--bone) 14%, transparent);
+  user-select: none;
+}
+.ov-card-label {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  color: var(--dim);
+}
+@media (hover: none) {
+  .ov-preview {
+    display: none;
+  }
 }
 
 /* ================= hero / loader ================= */
@@ -999,34 +1042,6 @@ html[data-intro="run"] .loader [data-uilds] {
   margin-top: 18px;
   font-size: 1.05rem;
 }
-/* Headlines that must hold a single line. The vw term shrinks the type
-   faster than .wrap shrinks, so the glyph run never outgrows the column —
-   caps are set from the longest headline currently using this (~38 chars).
-   ponytail: a much longer headline needs the cap retuned, not a new class.
-   Under 700px one line would mean unreadably small type, so they wrap. */
-/* `.section h2` outranks a bare class — match its specificity or the cap
-   below never applies. Measured: Bricolage 800 runs ~0.50em per character
-   at these sizes, so 3.2rem holds 38 characters inside a 1064px column. */
-.section h2.h-oneline,
-.h-oneline {
-  max-width: none;
-  white-space: nowrap;
-  font-size: min(3.2rem, 4.4vw);
-}
-.page-title.h-oneline {
-  font-size: min(3.7rem, 5vw);
-}
-@media (max-width: 700px) {
-  .section h2.h-oneline,
-  .h-oneline {
-    white-space: normal;
-    font-size: clamp(2rem, 5vw, 3.4rem);
-  }
-  .page-title.h-oneline {
-    font-size: clamp(2.1rem, 5.4vw, 4rem);
-  }
-}
-
 .book-direct {
   color: var(--bone);
   text-decoration: none;
@@ -1362,276 +1377,6 @@ html[data-intro="run"] .loader [data-uilds] {
   margin: 0;
 }
 
-/* ================= team — the crew roster ================= */
-
-/* Hairline seams, not gaps: the 1px grid gap shows the container behind, so
-   the roster reads as one ruled sheet rather than three floating cards. */
-.crew {
-  list-style: none;
-  padding: 0;
-  margin-top: 56px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: color-mix(in srgb, var(--bone) 10%, transparent);
-  border: 1px solid var(--hairline);
-}
-.crew-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 30px 28px 28px;
-  background:
-    linear-gradient(to right, rgba(236, 230, 218, 0.03) 1px, transparent 1px) 0 0 / 46px 46px,
-    linear-gradient(to bottom, rgba(236, 230, 218, 0.03) 1px, transparent 1px) 0 0 / 46px 46px,
-    var(--ink);
-}
-/* the broom stroke again — the seam draws across the top edge on hover */
-.crew-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: var(--seam);
-  box-shadow: 0 0 12px 1px color-mix(in srgb, var(--seam) 55%, transparent);
-  transition: width 0.55s var(--ease-out);
-}
-.crew-card:hover::before,
-.crew-card:focus-within::before {
-  width: 100%;
-}
-.crew-index {
-  position: absolute;
-  top: 26px;
-  right: 26px;
-}
-.crew-plate {
-  display: grid;
-  place-items: center;
-  width: 54px;
-  height: 54px;
-  margin-bottom: 6px;
-  border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--bone) 12%, transparent);
-  background:
-    radial-gradient(
-      120% 120% at 20% 20%,
-      color-mix(in srgb, var(--seam) 45%, transparent),
-      transparent 65%
-    ),
-    var(--ink-2);
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 1.05rem;
-  letter-spacing: 0.01em;
-  color: var(--bone);
-  user-select: none;
-  transition: border-color 0.4s var(--ease-out);
-}
-.crew-card:hover .crew-plate {
-  border-color: color-mix(in srgb, var(--seam) 55%, transparent);
-}
-.crew-name {
-  font-size: 1.45rem;
-  margin: 0;
-}
-.crew-role {
-  color: var(--seam);
-  margin: 0;
-}
-.crew-focus {
-  color: var(--muted);
-  font-size: 0.96rem;
-  margin: 6px 0 0;
-}
-.crew-contact {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin-top: auto;
-  padding-top: 22px;
-}
-.crew-contact a {
-  color: var(--dim);
-  text-decoration: none;
-  font-size: 0.88rem;
-  word-break: break-word;
-  transition: color 0.25s var(--ease-out);
-}
-.crew-contact a:hover {
-  color: var(--bone);
-}
-
-/* ================= careers — open roles ================= */
-
-.roles {
-  list-style: none;
-  padding: 0;
-  margin-top: 56px;
-  border-top: 1px solid var(--hairline);
-}
-.roles li {
-  border-bottom: 1px solid var(--hairline);
-}
-.role-row {
-  display: grid;
-  grid-template-columns: 3.5rem 1fr auto;
-  grid-template-areas: "num title go" "num meta go";
-  align-items: center;
-  column-gap: 24px;
-  padding-block: 28px;
-  text-decoration: none;
-  color: inherit;
-  transition: transform 0.45s var(--ease-out);
-}
-.role-row:hover {
-  transform: translateX(14px);
-}
-.role-num {
-  grid-area: num;
-  align-self: start;
-  padding-top: 6px;
-  transition: color 0.3s ease;
-}
-.role-row:hover .role-num {
-  color: var(--seam);
-}
-.role-title {
-  grid-area: title;
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: clamp(1.5rem, 3.6vw, 2.5rem);
-  font-variation-settings: "wght" 640;
-  letter-spacing: -0.03em;
-  line-height: 1.08;
-  transition: font-variation-settings 0.4s ease;
-}
-.role-row:hover .role-title {
-  font-variation-settings: "wght" 800;
-}
-.role-meta {
-  grid-area: meta;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 12px;
-}
-.role-chip {
-  border: 1px solid color-mix(in srgb, var(--bone) 16%, transparent);
-  border-radius: 999px;
-  padding: 4px 11px;
-  color: var(--muted);
-  white-space: nowrap;
-}
-.role-go {
-  grid-area: go;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--dim);
-  transition: color 0.3s ease;
-}
-.role-arrow {
-  display: inline-block;
-  transition: transform 0.3s var(--ease-out);
-}
-.role-row:hover .role-go {
-  color: var(--seam);
-}
-.role-row:hover .role-arrow {
-  transform: translate(3px, -3px);
-}
-.careers-cta {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 40px;
-}
-
-/* ---------- /careers page ---------- */
-
-/* first section on a subpage clears the fixed bar the hero normally absorbs */
-.page-head {
-  padding-top: clamp(150px, 20vh, 220px);
-}
-.page-title {
-  font-size: clamp(2.1rem, 5.4vw, 4rem);
-  margin-top: 14px;
-  max-width: 20ch;
-}
-.jd {
-  border-top: 1px solid var(--hairline);
-  padding-block: clamp(48px, 7vh, 72px);
-  scroll-margin-top: 96px;
-}
-.jd-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-.jd-head h2 {
-  font-size: clamp(1.7rem, 4vw, 2.6rem);
-  margin: 0;
-  max-width: none;
-}
-.jd-head .role-meta {
-  margin-top: 0;
-}
-.jd-summary {
-  color: var(--muted);
-  max-width: 52rem;
-  margin-top: 18px;
-  font-size: 1.05rem;
-}
-.jd-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
-  margin-top: 44px;
-}
-.jd-list {
-  list-style: none;
-  padding: 0;
-  margin: 16px 0 0;
-  display: grid;
-  gap: 11px;
-  color: var(--muted);
-  font-size: 0.96rem;
-  line-height: 1.5;
-}
-/* seam tick instead of a bullet — same mark as the process line */
-.jd-list li {
-  position: relative;
-  padding-left: 20px;
-}
-.jd-list li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.68em;
-  width: 9px;
-  height: 1px;
-  background: var(--seam);
-}
-.jd-stack {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
-}
-.jd-apply {
-  margin-top: 40px;
-}
-.hiring-steps {
-  grid-template-columns: repeat(4, 1fr);
-}
-
 /* ================= booking — curtain reveal ================= */
 
 .book {
@@ -1753,32 +1498,6 @@ html[data-intro="run"] .loader [data-uilds] {
   to { transform: translateX(-50%); }
 }
 
-/* section index inside the purple block */
-.footer-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px 28px;
-  padding-top: 30px;
-}
-.footer-nav a {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.72);
-  text-decoration: none;
-  transition: color 0.25s var(--ease-out);
-}
-.footer-nav a:hover {
-  color: var(--ink);
-}
-.footer-open {
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 999px;
-  padding: 2px 8px;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-}
-
 /* giant end-to-end wordmark — letters rise from masks (see KineticMark).
    Escapes the gutter: glyphs run viewport edge to viewport edge. */
 .footer-mark {
@@ -1857,16 +1576,8 @@ html[data-intro="run"] .loader [data-uilds] {
 /* ================= responsive ================= */
 
 @media (max-width: 960px) {
-  .steps,
-  .hiring-steps {
+  .steps {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .crew {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .jd-grid {
-    grid-template-columns: 1fr;
-    gap: 32px;
   }
   .svc-body-inner {
     padding-left: 0;
@@ -1897,24 +1608,8 @@ html[data-intro="run"] .loader [data-uilds] {
   .grain {
     display: none;
   }
-  .steps,
-  .hiring-steps {
+  .steps {
     grid-template-columns: 1fr;
-  }
-  .crew {
-    grid-template-columns: 1fr;
-  }
-  .role-row {
-    grid-template-columns: 2.6rem 1fr;
-    grid-template-areas: "num title" "num meta" "num go";
-    align-items: start;
-  }
-  .role-go {
-    justify-self: start;
-    margin-top: 14px;
-  }
-  .role-row:hover {
-    transform: none;
   }
   .index-row {
     grid-template-columns: 2.6rem 1fr;
@@ -1956,6 +1651,7 @@ html[data-intro="run"] .loader [data-uilds] {
   .cursor,
   .dust,
   .index-preview,
+  .ov-preview,
   .loader-sweep,
   .book-curtain {
     display: none;
@@ -1979,10 +1675,7 @@ html[data-intro="run"] .loader [data-uilds] {
   .index-row,
   .index-name,
   .svc-body,
-  .svc-word-fill,
-  .crew-card::before,
-  .role-row,
-  .role-title {
+  .svc-word-fill {
     transition-duration: 0.01s;
   }
   .svc-streak {
