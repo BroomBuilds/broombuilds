@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Inter, JetBrains_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Hanken_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import { site, SITE_URL } from "@/lib/site";
 import SmoothScroll from "./components/smooth-scroll";
-import Cursor from "./components/cursor";
-import Dust from "./components/dust";
 import "./globals.css";
 
+/* The house type: Bricolage for anything that's a headline, Inter for
+   reading, JetBrains Mono for labels, buttons and data. */
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
   subsets: ["latin"],
@@ -15,6 +15,15 @@ const bricolage = Bricolage_Grotesque({
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+});
+
+/* Not ours: BM Carpentry & Landscaping's brand face, used only inside the
+   screens that showcase their site, so the showcase is true to the build. */
+const hanken = Hanken_Grotesk({
+  variable: "--font-hanken",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -28,8 +37,8 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${site.name} — ${site.tagline}`,
-    template: `%s — ${site.name}`,
+    default: `${site.name} | ${site.tagline}`,
+    template: `%s | ${site.name}`,
   },
   description: site.metaDescription,
   keywords: [...site.keywords],
@@ -43,13 +52,13 @@ export const metadata: Metadata = {
     locale: site.locale,
     url: SITE_URL,
     siteName: site.name,
-    title: `${site.name} — ${site.tagline}`,
+    title: `${site.name} | ${site.tagline}`,
     description: site.metaDescription,
     // og image auto-linked from app/opengraph-image.tsx
   },
   twitter: {
     card: "summary_large_image",
-    title: `${site.name} — ${site.tagline}`,
+    title: `${site.name} | ${site.tagline}`,
     description: site.metaDescription,
     creator: site.twitter,
   },
@@ -81,8 +90,9 @@ const SERVICES_LD = [
   "SEO & generative engine optimization",
   "Performance & CRO",
   "AI development & integration",
-  "AI chatbots & automation",
-  "AI-powered web experiences",
+  "AI chat & WhatsApp agents",
+  "AI voice agents",
+  "Workflow automation",
 ];
 
 // Structured data: studio + site + services, for search engines and AI crawlers.
@@ -113,7 +123,6 @@ const jsonLd = {
       },
       address: {
         "@type": "PostalAddress",
-        addressLocality: "Lucknow",
         addressCountry: "IN",
       },
       areaServed: "Worldwide",
@@ -130,6 +139,7 @@ const jsonLd = {
         "AI development",
         "AI integration",
         "AI chatbots",
+        "AI voice agents",
         "AI automation",
       ],
     },
@@ -151,35 +161,28 @@ const jsonLd = {
   ],
 };
 
-/* Runs before first paint: decides whether the intro plays. Absent JS,
-   the attribute never lands and all content is simply visible.
-   ?loader forces a replay (dev/QA); reduced motion always wins. */
-const introScript = `(function(){try{var f=/[?&]loader/.test(location.search);var skip=matchMedia('(prefers-reduced-motion: reduce)').matches||(!f&&(location.pathname!=='/'||sessionStorage.getItem('bb-intro')));document.documentElement.dataset.intro=skip?'done':'run'}catch(e){document.documentElement.dataset.intro='done'}})()`;
-
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
       lang="en"
-      className={`${bricolage.variable} ${inter.variable} ${jetbrains.variable}`}
-      suppressHydrationWarning
+      className={`${bricolage.variable} ${inter.variable} ${jetbrains.variable} ${hanken.variable}`}
     >
-      <body suppressHydrationWarning>
-        <script dangerouslySetInnerHTML={{ __html: introScript }} />
+      <body>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
           }}
         />
-        <a href="#main" className="skip-link">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper"
+        >
           Skip to content
         </a>
-        <Dust />
         <SmoothScroll>{children}</SmoothScroll>
-        <Cursor />
-        <div className="grain" aria-hidden />
       </body>
     </html>
   );

@@ -1,278 +1,196 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import Wordmark from "./wordmark";
-import Magnetic from "./magnetic";
-import LocalClock from "./local-clock";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring } from "motion/react";
+import { ArrowRight, Phone } from "lucide-react";
+import { sections, site } from "@/lib/site";
 import { scrollState } from "@/lib/scroll";
-import { site } from "@/lib/site";
-import { EASE_OUT } from "@/lib/motion";
+import { cn } from "@/lib/cn";
+import Wordmark, { BrandMark } from "./wordmark";
+import BookTrigger from "./book-trigger";
+import { EASE } from "./motion";
 
-const LINKS = [
-  { href: "/#work", hash: "#work", label: "Work" },
-  { href: "/#services", hash: "#services", label: "Services" },
-  { href: "/#process", hash: "#process", label: "Process" },
-  { href: "/#book", hash: "#book", label: "Book a call" },
-];
-
-const SWEEP: [number, number, number, number] = [0.76, 0, 0.24, 1];
-
-/* The nav mechanic is the brand mechanic. Closed: a fixed bar that compacts
-   past 60px, hides on scroll-down / reveals on scroll-up, and carries a
-   scroll-progress seam along its top edge. Open: the wordmark's halves split
-   apart and a full-screen overlay sweeps down via clip-path — the broom
-   stroke — with masked, staggered menu items, focus-one/dim-the-rest hover,
-   a cursor-trailing preview, and a live-clock contact footer. Esc closes,
-   focus is trapped, scroll is locked through Lenis. */
+/* Floating nav. Transparent over the hero, ink-and-blur once the page
+   moves. Three columns with equal outer tracks, so the links sit on the true
+   centre of the page whatever the sides hold. The active section gets a pill
+   that glides between links, and a hairline tracks reading progress. */
 export default function Nav() {
-  const ref = useRef<HTMLElement>(null);
-  const progressRef = useRef<HTMLSpanElement>(null);
-  const toggleRef = useRef<HTMLButtonElement>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const previewRef = useRef<HTMLDivElement>(null);
-  const openRef = useRef(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [active, setActive] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  const [hovered, setHovered] = useState(-1);
   const reduced = useReducedMotion();
-  useEffect(() => {
-    openRef.current = open;
-  }, [open]);
 
-  /* --- bar behavior: compact / hide-reveal / progress seam ------------- */
+  const { scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 220, damping: 40, restDelta: 0.001 });
+
   useEffect(() => {
-    const el = ref.current!;
-    let lastY = window.scrollY;
-    const onScroll = () => {
-      const y = window.scrollY;
-      el.dataset.compact = String(y > 60);
-      // 6px hysteresis so tiny reversals never jitter the bar
-      if (!openRef.current) {
-        if (y > lastY + 6 && y > 140) el.dataset.hidden = "true";
-        else if (y < lastY - 6 || y <= 8) el.dataset.hidden = "false";
-      }
-      lastY = y;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      if (progressRef.current)
-        progressRef.current.style.transform = `scaleX(${max > 0 ? y / max : 0})`;
-    };
+    const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* --- open state: scroll lock, Esc, focus trap ------------------------ */
+  // Whichever section owns the middle band of the viewport is "active".
+  useEffect(() => {
+    const els = sections
+      .map((s) => document.getElementById(s.id))
+      .filter((el): el is HTMLElement => !!el);
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) setActive(e.target.id);
+      },
+      { rootMargin: "-45% 0px -50% 0px" },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  // Menu open: freeze the page underneath, close on Escape.
   useEffect(() => {
     if (!open) return;
-    const el = ref.current!;
-    const toggle = toggleRef.current;
-    el.dataset.hidden = "false";
     scrollState.lenis?.stop();
-    document.body.style.overflow = "hidden";
-    overlayRef.current?.focus();
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setOpen(false);
-        return;
-      }
-      if (e.key !== "Tab") return;
-      const focusables = el.querySelectorAll<HTMLElement>("a[href], button");
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener("keydown", onKey);
+    document.documentElement.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("keydown", onKey);
       scrollState.lenis?.start();
-      document.body.style.overflow = "";
-      toggle?.focus();
+      document.documentElement.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
     };
   }, [open]);
 
-  /* --- cursor-trailing preview inside the overlay ----------------------- */
-  useEffect(() => {
-    if (!open || reduced) return;
-    if (!window.matchMedia("(pointer: fine)").matches) return;
-    const overlay = overlayRef.current!;
-    const preview = previewRef.current;
-    if (!preview) return;
-
-    let px = 0, py = 0, tx = 0, ty = 0, tilt = 0;
-    const onMove = (e: PointerEvent) => {
-      tx = e.clientX;
-      ty = e.clientY;
-    };
-    overlay.addEventListener("pointermove", onMove, { passive: true });
-
-    let raf = 0;
-    const tick = () => {
-      const dx = tx - px;
-      px += dx * 0.14;
-      py += (ty - py) * 0.14;
-      tilt += (Math.max(-9, Math.min(9, dx * 0.08)) - tilt) * 0.12;
-      preview.style.transform = `translate3d(${px}px, ${py}px, 0) rotate(${tilt}deg)`;
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(raf);
-      overlay.removeEventListener("pointermove", onMove);
-    };
-  }, [open, reduced]);
-
-  /* item click → close, then glide (Lenis must be running again first) */
-  const go = useCallback((e: React.MouseEvent, hash: string) => {
-    setOpen(false);
-    if (location.pathname !== "/") return; // case pages: normal navigation
-    const target = document.querySelector(hash);
-    if (!target) return;
-    e.preventDefault();
-    scrollState.lenis?.start();
-    if (scrollState.lenis)
-      scrollState.lenis.scrollTo(target as HTMLElement, { offset: -72 });
-    else target.scrollIntoView({ behavior: "smooth" });
-  }, []);
-
   return (
-    <header ref={ref} className="nav" data-open={open}>
-      <span className="nav-progress" ref={progressRef} aria-hidden />
+    <>
+      <header className="fixed inset-x-0 top-0 z-50">
+        <div
+          className={cn(
+            "absolute inset-0 border-b transition-[background-color,border-color,backdrop-filter] duration-300",
+            scrolled || open
+              ? "border-line/80 bg-paper/80 backdrop-blur-xl backdrop-saturate-150"
+              : "border-transparent bg-transparent",
+          )}
+        />
+        <motion.span
+          aria-hidden
+          className="absolute -bottom-px left-0 h-px w-full origin-left bg-plum"
+          style={{ scaleX: progress, opacity: scrolled ? 1 : 0 }}
+        />
+        <div className="container-page relative grid h-(--nav-h) grid-cols-[1fr_auto] items-center gap-4 md:grid-cols-[1fr_auto_1fr]">
+          <a href="#top" className="flex items-center gap-2.5 justify-self-start" aria-label="BroomBuilds, back to top">
+            <BrandMark size={32} />
+            <Wordmark className="text-[21px]" />
+          </a>
+
+          <nav aria-label="Sections" className="hidden items-center gap-1 md:flex">
+            {sections.map((s) => (
+              <a
+                key={s.id}
+                href={`#${s.id}`}
+                className={cn(
+                  "relative rounded-full px-4 py-2 text-[14.5px] transition-colors duration-200",
+                  active === s.id ? "text-ink" : "text-ink-muted hover:text-ink",
+                )}
+              >
+                {active === s.id && (
+                  <motion.span
+                    layoutId="nav-pill"
+                    className="absolute inset-0 -z-10 rounded-full bg-ink/6"
+                    transition={reduced ? { duration: 0 } : { type: "spring", duration: 0.45, bounce: 0.15 }}
+                  />
+                )}
+                {s.label}
+              </a>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-2 justify-self-end">
+            {/* The number, as a call button that shows it on hover. */}
+            <a
+              href={`tel:${site.phoneHref}`}
+              aria-label={`Call us on ${site.phone}`}
+              className="group relative hidden h-11 w-11 place-items-center rounded-full text-ink-soft ring-1 ring-inset ring-ink/20 transition-[color,box-shadow,transform] duration-200 ease-out hover:text-ink hover:ring-ink/40 active:scale-[0.95] lg:grid"
+            >
+              <Phone className="h-4 w-4" />
+              <span
+                aria-hidden
+                className="pointer-events-none absolute right-0 top-full mt-2 -translate-y-1 whitespace-nowrap rounded-[8px] bg-card px-2.5 py-1.5 font-mono text-[11.5px] text-ink-soft opacity-0 shadow-card ring-1 ring-line transition-[opacity,transform] duration-150 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100"
+              >
+                {site.phone}
+              </span>
+            </a>
+            <BookTrigger className="group hidden h-11 items-center gap-2 rounded-full bg-ink px-5 font-mono text-[12px] font-medium uppercase tracking-[0.1em] text-paper transition-[transform,background-color,color] duration-200 ease-out hover:bg-plum hover:text-white active:scale-[0.97] sm:inline-flex">
+              Book a call
+              <ArrowRight className="h-4 w-4 transition-transform duration-200 [@media(hover:hover)]:group-hover:translate-x-0.5" />
+            </BookTrigger>
+            <button
+              type="button"
+              onClick={() => setOpen((o) => !o)}
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              aria-label={open ? "Close menu" : "Open menu"}
+              className="relative grid h-11 w-11 place-items-center rounded-full bg-ink text-paper transition-transform duration-150 active:scale-[0.95] md:hidden"
+            >
+              <span
+                className={cn(
+                  "absolute h-[1.5px] w-4 rounded bg-current transition-transform duration-300 ease-out",
+                  open ? "rotate-45" : "-translate-y-1",
+                )}
+              />
+              <span
+                className={cn(
+                  "absolute h-[1.5px] w-4 rounded bg-current transition-transform duration-300 ease-out",
+                  open ? "-rotate-45" : "translate-y-1",
+                )}
+              />
+            </button>
+          </div>
+        </div>
+      </header>
 
       <AnimatePresence>
         {open && (
           <motion.div
-            key="overlay"
-            id="nav-overlay"
-            ref={overlayRef}
-            className="ov"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Menu"
-            tabIndex={-1}
+            id="mobile-menu"
+            className="fixed inset-0 z-40 flex flex-col bg-paper pt-(--nav-h) md:hidden"
             initial={reduced ? { opacity: 0 } : { clipPath: "inset(0 0 100% 0)" }}
             animate={reduced ? { opacity: 1 } : { clipPath: "inset(0 0 0% 0)" }}
-            exit={reduced ? { opacity: 0 } : { clipPath: "inset(0 0 100% 0)" }}
-            transition={reduced ? { duration: 0.2 } : { duration: 0.8, ease: SWEEP }}
+            exit={reduced ? { opacity: 0 } : { clipPath: "inset(0 0 100% 0)", transition: { duration: 0.3, ease: EASE } }}
+            transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
           >
-            <nav
-              className="ov-list"
-              aria-label="Sections"
-              data-hovered={hovered >= 0}
-              onPointerLeave={() => setHovered(-1)}
-            >
-              {LINKS.map((l, i) => (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  className="ov-link"
-                  data-on={hovered === i}
-                  onClick={(e) => go(e, l.hash)}
-                  onPointerEnter={() => setHovered(i)}
-                  onFocus={() => setHovered(i)}
+            <nav aria-label="Menu" className="container-page flex flex-1 flex-col justify-center gap-1">
+              {sections.map((s, i) => (
+                <motion.a
+                  key={s.id}
+                  href={`#${s.id}`}
+                  onClick={() => setOpen(false)}
+                  className="border-b border-line py-4 font-display text-[40px] font-bold tracking-[-0.04em]"
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.12 + i * 0.05, ease: EASE }}
                 >
-                  <span className="ov-mask">
-                    <motion.span
-                      className="ov-line"
-                      initial={reduced ? { y: 0 } : { y: "115%" }}
-                      animate={{ y: 0 }}
-                      exit={reduced ? {} : { y: "115%" }}
-                      transition={{
-                        duration: 0.7,
-                        ease: EASE_OUT,
-                        delay: reduced ? 0 : 0.2 + i * 0.07,
-                      }}
-                    >
-                      <span className="ov-num label">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      {l.label}
-                    </motion.span>
-                  </span>
-                </Link>
+                  {s.label}
+                </motion.a>
               ))}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.12 + sections.length * 0.05, ease: EASE }}
+              >
+                <BookTrigger
+                  onOpen={() => setOpen(false)}
+                  className="block border-b border-line py-4 font-display text-[40px] font-bold tracking-[-0.04em] text-lilac"
+                >
+                  Book a call
+                </BookTrigger>
+              </motion.div>
             </nav>
-
-            <motion.div
-              className="ov-footer"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5, delay: reduced ? 0 : 0.65 }}
-            >
-              <LocalClock />
-              <a className="ov-mail" href={`mailto:${site.email}`}>
-                {site.email}
-              </a>
-              <nav className="ov-socials" aria-label="Social links">
-                {Object.entries(site.socials).map(([k, url]) => (
-                  <a key={k} href={url} target="_blank" rel="noopener noreferrer">
-                    {k === "x" ? "X" : k[0].toUpperCase() + k.slice(1)}
-                  </a>
-                ))}
-              </nav>
-            </motion.div>
-
-            {!reduced && (
-              <div className="ov-preview" ref={previewRef} data-show={hovered >= 0} aria-hidden>
-                {hovered >= 0 && (
-                  <div className="ov-card" style={{ "--card-i": hovered } as React.CSSProperties}>
-                    <span className="ov-card-mark">
-                      {String(hovered + 1).padStart(2, "0")}
-                    </span>
-                    <span className="ov-card-label label">{LINKS[hovered].label}</span>
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="container-page flex items-center justify-between py-8 font-mono text-[12.5px] text-ink-muted">
+              <a href={`tel:${site.phoneHref}`}>{site.phone}</a>
+              <a href={`mailto:${site.email}`}>Email us</a>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      <div className="nav-inner wrap">
-        <Link href="/" className="nav-logo" aria-label="BroomBuilds — home">
-          <Image
-            src="/mascot.png"
-            alt=""
-            width={30}
-            height={30}
-            className="nav-mascot"
-            priority
-          />
-          <Wordmark />
-        </Link>
-        {/* logo stays out of the rise — the intro's FLIP delivers it */}
-        <div
-          className="nav-right intro-rise"
-          style={{ "--rise-delay": "0.45s" } as React.CSSProperties}
-        >
-          <Magnetic>
-            <button
-              ref={toggleRef}
-              type="button"
-              className="nav-toggle"
-              aria-expanded={open}
-              aria-controls="nav-overlay"
-              onClick={() => setOpen((o) => !o)}
-            >
-              <span className="nav-toggle-mask">
-                <span className="nav-toggle-line label">Menu</span>
-                <span className="nav-toggle-line label" aria-hidden>
-                  Close
-                </span>
-              </span>
-            </button>
-          </Magnetic>
-        </div>
-      </div>
-    </header>
+    </>
   );
 }

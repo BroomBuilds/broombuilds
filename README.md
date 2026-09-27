@@ -1,11 +1,11 @@
 # BroomBuilds
 
-Type-forward design-and-build studio site. Next.js App Router + Tailwind v4 +
-Framer Motion (`motion`) + GSAP ScrollTrigger + Lenis. The mirrored-B wordmark
-and the loader are the brand — everything else stays quiet.
+Single-page studio site. Next.js App Router + Tailwind v4 + Motion (`motion`)
++ Lenis. Warm ink, bone type, one purple seam — the house palette.
 
-> Note: no shadcn/ui — the Calendly popup uses Calendly's own widget, and the
-> two button styles didn't justify the primitive layer.
+The page is one argument, told in order (see `src/app/page.tsx`):
+claim → the two questions → what we are → what we build → proof → process →
+tools → ways to work → FAQ → book.
 
 ## Run
 
@@ -14,40 +14,47 @@ npm install
 npm run dev
 ```
 
-## Set your Calendly link
+## Where things live
 
-Edit `src/lib/calendly.ts`:
+| What | File |
+| --- | --- |
+| All homepage copy | `src/content/home.ts` |
+| Work cards (films, screenshots, links) | `src/content/projects.ts` |
+| Name, contact, SEO metadata, nav sections | `src/lib/site.ts` |
+| Calendly link + theme | `src/lib/calendly.ts` |
+| Colours, radii, easing, type roles | `src/app/globals.css` (`@theme`) |
+| Fonts | `src/app/layout.tsx` (Bricolage Grotesque, Inter, JetBrains Mono) |
 
-```ts
-export const CALENDLY_URL = "https://calendly.com/your-handle/intro"; // TODO: replace
-```
+## Add a project
 
-The brand theme params (ink background, bone text, periwinkle accent) are
-appended automatically for both the popup and the inline embed.
+Drop a screenshot (and optionally a muted `.mp4` film) in `public/work/`, then
+append an entry to `src/content/projects.ts`. `kind` decides which filter it
+appears under; leave `url` out and set `note` when there's no public link.
 
-## Add a case study
+## The signature pieces
 
-Append an entry to `src/content/case-studies.ts`. The work-section card, the
-`/work/[slug]` route, and the sitemap all derive from that one array. Keep the
-`result` a concrete number ("2.1×", "0.6s", "+48%") — the design leans on it.
+- **Layer stack** (`layer-stack.tsx`) — the hero's live site pins, tilts and
+  peels apart into Design → Build → Automate as you scroll. Desktop only;
+  phones get a stacked list, reduced motion gets it already apart.
+- **The broom stroke** (`Sweep` in `motion.tsx`) — the one flourish: a
+  bristled seam-purple pass under a word.
+- **Mocks** (`mocks/`) — product screens set in one real client's world, BM
+  Carpentry & Landscaping, using their real palette, type, logo and photos.
+  The Design showcase is their real site; the automation and growth screens
+  are illustrative and labelled as such.
 
-## Set the production domain
+## Motion rules
 
-`src/lib/site.ts` → `SITE_URL`. Canonicals, OG URLs, sitemap, robots, and
-JSON-LD all read from it.
+Transforms, opacity and clip-path only. Custom curves from the `@theme`
+tokens (`ease-out` is the strong curve). Hover effects only on hover-capable
+pointers. Everything has a `prefers-reduced-motion` path; anything whose
+*markup* depends on that preference uses `usePrefersReducedMotion` so it
+hydrates cleanly.
 
-## Deploy to Vercel
+## Deploy
 
 ```bash
 npx vercel
 ```
 
-No env vars required. Fonts are self-hosted via `next/font`; the OG image and
-favicon are generated at the edge (`app/opengraph-image.tsx`, `app/icon.tsx`).
-
-## Motion system
-
-- `src/lib/motion.ts` — shared spring presets and the house ease curve.
-- Loader sequence lives in `src/app/components/loader.tsx`; a "↻ Replay"
-  button appears in dev builds.
-- `prefers-reduced-motion` skips the loader and downgrades reveals to fades.
+Set `SITE_URL` in `src/lib/site.ts` to the production domain first.

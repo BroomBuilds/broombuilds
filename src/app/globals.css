@@ -1,1815 +1,445 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   BroomBuilds — warm-ink editorial, one periwinkle accent.
-   Tokens are the contract; components only reference variables.
+   BroomBuilds — warm ink, bone type, one purple seam.
+
+   Tokens are the contract: components reference roles, never raw hex.
+   Role names read as jobs, not colours:
+     paper  page ground        band   alternate section     card  raised surface
+     ink    foreground type    line   hairlines             night stage panels
+     plum   the seam — fills   lilac  the seam, lifted so it reads as text
 --------------------------------------------------------------------------- */
 
 :root {
-  --ink: #08090b;
-  --ink-2: #0e1013;
-  --bone: #ece6da;
-  --muted: #b9b4aa;
-  --dim: #64656c;
-  /* the brand purple */
-  --seam: #56186e;
-
-  --font-display: var(--font-bricolage), system-ui, sans-serif;
-  --font-body: var(--font-inter), system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
-
-  --wrap: 1160px;
-  --gutter: clamp(20px, 5vw, 48px);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --hairline: color-mix(in srgb, var(--bone) 10%, transparent);
+  --nav-h: 76px;
+}
+@media (min-width: 768px) {
+  :root {
+    --nav-h: 88px;
+  }
 }
 
-@theme inline {
-  --color-ink: var(--ink);
-  --color-ink-2: var(--ink-2);
-  --color-bone: var(--bone);
-  --color-muted: var(--muted);
-  --color-dim: var(--dim);
-  --color-seam: var(--seam);
+@theme {
+  /* surfaces — ink #08090b, ink-2 #0e1013 */
+  --color-paper: #08090b;
+  --color-band: #0e1013;
+  --color-card: #121418;
+  --color-line: #222429;
+  --color-line-strong: #33363c;
+
+  /* type — bone #ece6da, muted #b9b4aa, dim #64656c */
+  --color-ink: #ece6da;
+  --color-ink-soft: #b9b4aa;
+  --color-ink-muted: #8b8983;
+  --color-dim: #64656c;
+
+  /* night — the stages that sit a step apart from the page */
+  --color-night: #0e1013;
+  --color-night-2: #17191e;
+  --color-night-line: #26282e;
+
+  /* the brand purple (seam) and its readable lift */
+  --color-plum: #56186e;
+  --color-plum-deep: #6a2188;
+  --color-plum-soft: #1d0f24;
+  --color-lilac: #b58bd3;
+  --color-live: #3fa66b;
+
+  --radius-btn: 999px;
+  --radius-card: 14px;
+  --radius-tile: 22px;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: ui-serif, Georgia, serif;
+  --font-client: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
+
+  --shadow-card: 0 1px 0 rgba(236, 230, 218, 0.03) inset, 0 18px 40px -22px rgba(0, 0, 0, 0.7);
+  --shadow-tile: 0 1px 0 rgba(236, 230, 218, 0.03) inset, 0 34px 70px -34px rgba(0, 0, 0, 0.85);
+  --shadow-float: 0 44px 90px -30px rgba(0, 0, 0, 0.8), 0 12px 28px -12px rgba(0, 0, 0, 0.6);
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* ---------- base ---------- */
 
-html {
-  scroll-behavior: smooth;
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-padding-top: var(--nav-h);
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.6;
+    overflow-x: clip;
+  }
+
+  /* blueprint grid + soft vignette on a fixed layer — background-attachment:
+     fixed repaints on scroll and is ignored on iOS; this is the cheap way */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      radial-gradient(120% 90% at 50% 0%, rgba(236, 230, 218, 0.045), transparent 60%),
+      linear-gradient(to right, rgba(236, 230, 218, 0.032) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(236, 230, 218, 0.032) 1px, transparent 1px);
+    background-size: 100% 100%, 46px 46px, 46px 46px;
+  }
+
+  ::selection {
+    background: var(--color-plum);
+    color: #fff;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+    text-wrap: balance;
+  }
+  h3 {
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-lilac);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
 }
 
-body {
-  background: var(--ink);
-  color: var(--bone);
-  font-family: var(--font-body);
-  font-size: 17px;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: clip;
+/* ---------- utilities ---------- */
+
+@layer utilities {
+  .container-page {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+    max-width: 84rem;
+  }
+  @media (min-width: 768px) {
+    .container-page {
+      padding-inline: 2rem;
+    }
+  }
+  @media (min-width: 1280px) {
+    .container-page {
+      padding-inline: 3rem;
+    }
+  }
+
+  /* Mono utility label — the old house label, kept exactly. */
+  .label {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hairline {
+    box-shadow: inset 0 0 0 1px var(--color-line);
+  }
+
+  /* Faint dot grid behind every diagram panel. */
+  .dot-grid {
+    background-image: radial-gradient(var(--color-line-strong) 1px, transparent 1px);
+    background-size: 18px 18px;
+    background-position: 9px 9px;
+  }
+  .dot-grid-night {
+    background-image: radial-gradient(rgba(236, 230, 218, 0.07) 1px, transparent 1px);
+    background-size: 18px 18px;
+    background-position: 9px 9px;
+  }
+
+  /* Paper grain — kills gradient banding on the big night stages. */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  /* Horizontal logo rows. The track holds its items twice, so moving it by
+     half its width loops without a seam. */
+  .marquee-mask {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee var(--marquee-duration, 60s) linear infinite;
+  }
+  .marquee-reverse {
+    animation-direction: reverse;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .marquee-mask:hover .marquee-track {
+      animation-play-state: paused;
+    }
+  }
+
+  /* Marching dashes on diagram connectors — reads as data moving. */
+  .dash-flow {
+    stroke-dasharray: 4 5;
+    animation: dash-flow 1.1s linear infinite;
+  }
+
+  /* One-colour logos from any SVG: the file is the mask, currentColor fills. */
+  .logo-mask {
+    display: inline-block;
+    background-color: currentColor;
+    -webkit-mask: var(--logo) center / contain no-repeat;
+    mask: var(--logo) center / contain no-repeat;
+  }
 }
 
-/* blueprint grid + soft vignette on a fixed layer — background-attachment:
-   fixed repaints on scroll and is ignored on iOS; this is the cheap way */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image:
-    radial-gradient(120% 90% at 50% 0%, rgba(236, 230, 218, 0.045), transparent 60%),
-    linear-gradient(to right, rgba(236, 230, 218, 0.032) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(236, 230, 218, 0.032) 1px, transparent 1px);
-  background-size: 100% 100%, 46px 46px, 46px 46px;
-}
-
-::selection {
-  background: var(--seam);
-  color: #fff;
-}
-
-:focus-visible {
-  outline: 2px solid var(--seam);
-  outline-offset: 3px;
-  border-radius: 2px;
-}
-
-h1, h2, h3 {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.02;
-  text-wrap: balance;
-}
-
-.wrap {
-  max-width: var(--wrap);
-  margin-inline: auto;
-  padding-inline: var(--gutter);
-}
-
-/* mono utility label */
-.label {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--dim);
-}
-
-.skip-link {
-  position: fixed;
-  top: -100px;
-  left: 16px;
-  z-index: 100;
-  padding: 10px 18px;
-  background: var(--bone);
-  color: var(--ink);
-  border-radius: 999px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  transition: top 0.2s var(--ease-out);
-}
-.skip-link:focus {
-  top: 16px;
-}
-
-/* ---------- mirrored-B wordmark (shared: nav, footer, loader) ----------
-   Brand rule: "Broom" is white, "Builds" (mirrored B included) is purple. */
-
-.flip-b {
-  display: inline-block;
-  transform: scaleX(-1);
-}
-.wordmark {
-  color: #fff;
-  white-space: nowrap;
-}
-.wordmark .wm-broom,
-.wordmark .wm-builds {
-  display: inline-block;
-}
-.wordmark .wm-builds {
-  color: var(--seam);
-}
-
-/* ---------- buttons ---------- */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 13px 26px;
-  border-radius: 999px;
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition:
-    background-color 0.3s var(--ease-out),
-    color 0.3s var(--ease-out),
-    border-color 0.3s var(--ease-out),
-    transform 0.3s var(--ease-out);
-}
-.btn:active {
-  transform: scale(0.97);
-}
-.btn-primary {
-  background: var(--bone);
-  color: var(--ink);
-}
-.btn-primary:hover {
-  background: var(--seam);
-  color: #fff;
-}
-.btn-ghost {
-  background: transparent;
-  color: var(--bone);
-  border-color: color-mix(in srgb, var(--bone) 25%, transparent);
-}
-.btn-ghost:hover {
-  border-color: var(--seam);
-  color: var(--seam);
-}
-
-.magnetic {
-  display: inline-block;
-  will-change: transform;
-}
-
-/* ---------- custom cursor ---------- */
-
-.cursor {
-  position: fixed;
-  top: -5px;
-  left: -5px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--bone);
-  mix-blend-mode: difference;
-  pointer-events: none;
-  z-index: 200;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-html.has-cursor,
-html.has-cursor a,
-html.has-cursor button {
-  cursor: none;
-}
-
-/* ---------- interactive dust background ---------- */
-
-.dust {
-  position: fixed;
-  inset: 0;
-  z-index: -1; /* above body::before grid, below all content */
-  pointer-events: none;
-}
-
-/* ---------- grain ---------- */
-
-.grain {
-  position: fixed;
-  inset: -75%;
-  z-index: 150;
-  pointer-events: none;
-  opacity: 0.045;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation: grain 0.9s steps(4) infinite;
-  will-change: transform;
-}
-@keyframes grain {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(-2%, 3%); }
-  50% { transform: translate(3%, -2%); }
-  75% { transform: translate(-3%, -3%); }
-  100% { transform: translate(2%, 2%); }
-}
-
-/* ---------- intro gating ----------
-   An inline script sets data-intro="run" (first visit, motion OK) or "done"
-   before first paint. The loader timeline flips it to "rise" the moment the
-   veil lifts, so JS timing and CSS delays never race — --rise-delay is just
-   a small stagger from that moment. Without JS the attribute is absent and
-   everything is simply visible — crawlers never wait for the loader.
-   Reveals are mask rises (clip + lift), never plain opacity fades. */
-
-html[data-intro="run"] .intro-rise {
-  clip-path: inset(0 0 100% 0);
-  transform: translateY(26px);
-}
-html[data-intro="rise"] .intro-rise {
-  clip-path: inset(0 0 100% 0);
-  transform: translateY(26px);
-  animation: intro-rise 0.9s var(--ease-out) forwards;
-  animation-delay: var(--rise-delay, 0s);
-}
-@keyframes intro-rise {
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
   to {
-    clip-path: inset(0 0 -12% 0);
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* The AI host's voice, in the call mock: bars breathing at slightly
+   different rates. Decorative; gone under reduced motion. */
+.voice-bar {
+  transform-origin: center;
+  animation: voice 0.9s ease-in-out infinite alternate;
+}
+@keyframes voice {
+  from {
+    transform: scaleY(0.35);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* The services tab countdown: fills once per auto-advance. */
+.tab-progress {
+  transform: scaleX(0);
+  animation: tab-progress linear forwards;
+}
+@keyframes tab-progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -18;
+  }
+}
+
+/* ---------- headline entrance ----------
+   CSS rather than JS so the words paint with the server HTML — the heading
+   is never blank while the bundle loads. `--d` staggers each word. */
+@layer utilities {
+  .word-rise {
+    animation: word-rise 0.9s var(--ease-out) both;
+    animation-delay: var(--d, 0s);
+  }
+  .fade-rise {
+    animation: fade-rise 0.8s var(--ease-out) both;
+    animation-delay: var(--d, 0s);
+  }
+}
+
+@keyframes word-rise {
+  from {
+    transform: translateY(108%);
+  }
+  to {
     transform: translateY(0);
   }
 }
 
-/* ---------- calendly inline shell ---------- */
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-.calendly-frame {
-  margin: 0 auto;
-  border-radius: 14px;
-  overflow: hidden;
-  background: var(--ink-2);
-  border: 1px solid color-mix(in srgb, var(--bone) 12%, transparent);
-  box-shadow: 0 24px 64px -24px rgba(0, 0, 0, 0.55);
+/* ---------- the broom stroke ----------
+   The brand's one flourish: a bristled plum stroke that sweeps in under a
+   word, left to right, like a single pass of the broom. Revealed with
+   clip-path so the bristle texture never stretches. */
+.sweep {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
 }
-.calendly-frame-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 14px;
-  background: color-mix(in srgb, var(--ink-2) 88%, black);
-  border-bottom: 1px solid color-mix(in srgb, var(--bone) 8%, transparent);
+.sweep-stroke {
+  position: absolute;
+  left: -0.06em;
+  right: -0.1em;
+  bottom: 0.07em;
+  height: 0.4em;
+  pointer-events: none;
+  color: var(--sweep-color, color-mix(in srgb, var(--color-plum) 85%, transparent));
+  clip-path: inset(0 100% 0 0);
 }
-.calendly-frame-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--bone) 20%, transparent);
+.sweep-stroke svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
-.calendly-frame-dot:first-child {
-  background: var(--seam);
+.sweep[data-play="true"] .sweep-stroke,
+.sweep[data-play="auto"] .sweep-stroke {
+  animation: sweep-in 0.95s var(--ease-in-out) both;
+  animation-delay: var(--d, 0s);
 }
-.calendly-frame-label {
-  margin-left: 8px;
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  color: color-mix(in srgb, var(--bone) 40%, transparent);
+@keyframes sweep-in {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
 }
-/* tall enough that month grid + timezone picker are visible together; the
-   widget mounts into .calendly-inner (taller still), so the scroll — and
-   the scrollbar — belong to the shell, not the cross-origin iframe */
+
+/* ---------- stage reveal ----------
+   Closed state is a real pill: a visible slice of the stage, which then opens
+   to the full box. CSS so clip-path's calc() values interpolate and it paints
+   before hydration. */
+.stage-reveal {
+  --pill-w: 220px;
+  --pill-h: 64px;
+  /* px, not %: the stage is very tall, so the pill sits where it's seen */
+  --pin-y: 96px;
+  clip-path: inset(
+    var(--pin-y) calc(50% - var(--pill-w) / 2) calc(100% - var(--pin-y) - var(--pill-h))
+      calc(50% - var(--pill-w) / 2) round 999px
+  );
+  transition: clip-path 1.25s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.stage-reveal.is-open {
+  clip-path: inset(0% 0% 0% 0% round var(--radius-tile));
+}
+.stage-reveal .stage-item {
+  opacity: 0;
+  transform: translateY(18px);
+}
+.stage-reveal.is-open .stage-item {
+  animation: fade-rise 0.7s var(--ease-out) both;
+  animation-delay: var(--d, 0s);
+}
+
+/* ---------- Calendly ----------
+   The widget mounts at a fixed height inside a scrolling shell, so the
+   scrollbar is ours: thin, transparent track, plum thumb. */
 .calendly-shell {
-  height: 600px;
-  background: var(--ink-2);
+  height: 700px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--seam) 55%, var(--bone) 20%) transparent;
+  scrollbar-color: color-mix(in srgb, var(--color-plum) 55%, var(--color-ink) 20%) transparent;
 }
 .calendly-shell::-webkit-scrollbar {
   width: 6px;
 }
-.calendly-shell::-webkit-scrollbar-track {
-  background: transparent;
-}
 .calendly-shell::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--seam) 55%, var(--bone) 20%);
-  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-plum) 55%, var(--color-ink) 20%);
+  border-radius: 99px;
 }
-.calendly-shell::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--seam) 80%, var(--bone) 20%);
-}
-.calendly-inner {
-  height: 980px;
+.calendly-shell .calendly-inline-widget,
+.calendly-shell > div {
+  min-height: 960px;
 }
 @media (max-width: 640px) {
   .calendly-shell {
-    height: 520px;
-  }
-  .calendly-inner {
-    height: 1050px;
+    height: 660px;
   }
 }
 /* Calendly's background/text/primary_color URL theming is a paid-plan-only
    feature — on free plans it's silently ignored and the widget renders its
    default white UI. This filter forces a dark look client-side instead:
-   invert flips the white page to near-black, hue-rotate corrects hues back
-   (Calendly's blue lands close to --seam). Their own icons/logo invert too,
-   which is an acceptable tradeoff for a consistently dark embed. */
+   invert flips the white page to near-black, hue-rotate corrects hues back.
+   contrast(1.85) keeps date numbers and their circles apart after the flip. */
+.calendly-shell {
+  background: var(--color-band);
+}
 .calendly-shell iframe,
 .calendly-popup-content iframe {
   color-scheme: dark;
-  /* Tuned by eye against the live widget. The date number is white-ish
-     composited over Calendly's blue circle, so after inversion both land in
-     the same midrange — contrast(1.85) is what pulls them apart: numbers
-     drop to a deep blue, circles rise to light periwinkle. hue-rotate(200)
-     keeps the accent periwinkle; pushing further toward --seam's purple
-     (212deg+) turns the circles pink and washes the numbers out again. */
   filter: invert(0.93) hue-rotate(200deg) saturate(1.8) contrast(1.85) brightness(0.97);
-  background: var(--ink-2);
+  background: var(--color-band);
 }
-/* the popup overlay itself (backdrop + close button) still renders as
-   Calendly's own unstyled chrome — darken the backdrop to match */
 .calendly-overlay {
+  z-index: 100 !important;
   background: rgba(8, 9, 11, 0.85) !important;
 }
 .calendly-popup-content {
-  background: var(--ink-2) !important;
+  background: var(--color-band) !important;
 }
 
-/* ================= nav ================= */
-
-.nav {
-  position: fixed;
-  inset: 0 0 auto 0;
-  z-index: 50;
-  background: transparent;
-  border-bottom: 1px solid transparent;
-  transition:
-    transform 0.5s var(--ease-out),
-    background-color 0.4s var(--ease-out),
-    border-color 0.4s var(--ease-out);
-}
-/* compact past 60px: tighter bar, backdrop blur */
-.nav[data-compact="true"] {
-  background: color-mix(in srgb, var(--ink) 72%, transparent);
-  backdrop-filter: blur(14px);
-  border-bottom-color: color-mix(in srgb, var(--bone) 8%, transparent);
-}
-.nav[data-hidden="true"] {
-  transform: translateY(-101%);
-}
-.nav[data-open="true"] {
-  transform: none;
-  background: transparent;
-  backdrop-filter: none;
-  border-bottom-color: transparent;
-}
-
-/* scroll-progress seam along the very top */
-.nav-progress {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  z-index: 3;
-  background: var(--seam);
-  box-shadow: 0 0 12px 1px color-mix(in srgb, var(--seam) 60%, transparent);
-  transform: scaleX(0);
-  transform-origin: left;
-  pointer-events: none;
-}
-.nav[data-open="true"] .nav-progress {
-  opacity: 0;
-}
-
-.nav-inner {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 72px;
-  transition: height 0.45s var(--ease-out);
-}
-.nav[data-compact="true"] .nav-inner {
-  height: 58px;
-}
-
-.nav-logo {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 25px;
-  letter-spacing: -0.02em;
-  text-decoration: none;
-}
-/* mascot mark sits left of the wordmark; it stays hidden through the intro
-   and parks in exactly as the page rises — reading as the same rider that
-   just swept the veil away. Visible with no JS / on return visits. */
-.nav-mascot {
-  width: 30px;
-  height: 30px;
-  flex: none;
-  opacity: 0;
-  transition: opacity 0.6s var(--ease-out);
-}
-html[data-intro="rise"] .nav-mascot,
-html[data-intro="done"] .nav-mascot,
-html:not([data-intro]) .nav-mascot {
-  opacity: 1;
-}
-/* opening the menu splits the wordmark halves with a soft seam glow */
-.nav-logo .wm-broom,
-.nav-logo .wm-builds {
-  transition: transform 0.6s var(--ease-out);
-}
-.nav[data-open="true"] .nav-logo .wm-broom {
-  transform: translateX(-7px);
-}
-.nav[data-open="true"] .nav-logo .wm-builds {
-  transform: translateX(7px);
-}
-.nav-logo::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 26px;
-  height: 26px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--seam) 55%, transparent),
-    transparent 70%
-  );
-  opacity: 0;
-  filter: blur(2px);
-  transition: opacity 0.5s var(--ease-out);
-  pointer-events: none;
-}
-.nav[data-open="true"] .nav-logo::after {
-  opacity: 1;
-}
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 26px;
-}
-
-/* menu toggle — masked two-line Menu↔Close swap */
-.nav-toggle {
-  background: none;
-  border: 1px solid color-mix(in srgb, var(--bone) 22%, transparent);
-  border-radius: 999px;
-  padding: 10px 20px;
-  cursor: pointer;
-  transition: border-color 0.3s var(--ease-out);
-}
-.nav-toggle:hover {
-  border-color: var(--seam);
-}
-.nav-toggle-mask {
-  display: block;
-  position: relative;
-  overflow: hidden;
-}
-.nav-toggle-line {
-  display: block;
-  min-width: 6.5ch; /* "Close" + tracking sizes the mask (ch ignores letter-spacing) */
-  text-align: center;
-  color: var(--bone);
-  transition: transform 0.45s var(--ease-out);
-}
-.nav-toggle-line + .nav-toggle-line {
-  position: absolute;
-  inset: 0;
-  color: var(--seam);
-  transform: translateY(110%);
-}
-.nav[data-open="true"] .nav-toggle-line:first-child {
-  transform: translateY(-110%);
-}
-.nav[data-open="true"] .nav-toggle-line + .nav-toggle-line {
-  transform: translateY(0);
-}
-
-/* ---------- full-screen overlay — the broom-stroke sweep ---------- */
-
-.ov {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background:
-    linear-gradient(to right, rgba(236, 230, 218, 0.03) 1px, transparent 1px) 0 0 / 46px 46px,
-    linear-gradient(to bottom, rgba(236, 230, 218, 0.03) 1px, transparent 1px) 0 0 / 46px 46px,
-    var(--ink);
-  will-change: clip-path;
-}
-.ov-list {
-  display: flex;
-  flex-direction: column;
-  padding-inline: var(--gutter);
-  max-width: var(--wrap);
-  margin-inline: auto;
-  width: 100%;
-}
-.ov-link {
-  text-decoration: none;
-  color: var(--bone);
-  padding-block: clamp(4px, 1vh, 10px);
-}
-.ov-mask {
-  display: block;
-  overflow: hidden;
-}
-.ov-line {
-  display: flex;
-  align-items: baseline;
-  gap: clamp(14px, 3vw, 28px);
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: clamp(2.2rem, 8vw, 5.5rem);
-  font-variation-settings: "wght" 640;
-  letter-spacing: -0.03em;
-  line-height: 1.08;
-  transition:
-    font-variation-settings 0.35s ease,
-    opacity 0.35s ease;
-}
-.ov-num {
-  color: var(--dim);
-  transition: color 0.3s ease;
-}
-/* hover = focus one, dim + thin the rest */
-.ov-list[data-hovered="true"] .ov-link:not([data-on="true"]) .ov-line {
-  opacity: 0.28;
-  font-variation-settings: "wght" 300;
-}
-.ov-link[data-on="true"] .ov-line {
-  font-variation-settings: "wght" 800;
-}
-.ov-link[data-on="true"] .ov-num {
-  color: var(--seam);
-}
-
-/* contact footer inside the overlay */
-.ov-footer {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  flex-wrap: wrap;
-  padding: 24px var(--gutter);
-  border-top: 1px solid var(--hairline);
-}
-.ov-mail {
-  color: var(--bone);
-  text-decoration: none;
-  font-size: 0.95rem;
-  transition: color 0.25s var(--ease-out);
-}
-.ov-mail:hover {
-  color: var(--seam);
-}
-.ov-socials {
-  display: flex;
-  gap: 20px;
-}
-.ov-socials a {
-  color: var(--muted);
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: color 0.25s var(--ease-out);
-}
-.ov-socials a:hover {
-  color: var(--seam);
-}
-
-/* cursor-trailing preview card */
-.ov-preview {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 2;
-  pointer-events: none;
-  will-change: transform;
-}
-.ov-preview[data-show="false"] {
-  visibility: hidden;
-}
-.ov-card {
-  position: relative;
-  width: min(300px, 26vw);
-  aspect-ratio: 4 / 3;
-  transform: translate(40px, -110%);
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--bone) 12%, transparent);
-  background:
-    radial-gradient(
-      120% 120% at calc(20% + var(--card-i) * 20%) 20%,
-      color-mix(in srgb, var(--seam) 38%, transparent),
-      transparent 65%
-    ),
-    var(--ink-2);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  animation: preview-in 0.4s var(--ease-out);
-}
-.ov-card-mark {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 5rem;
-  color: color-mix(in srgb, var(--bone) 14%, transparent);
-  user-select: none;
-}
-.ov-card-label {
-  position: absolute;
-  left: 16px;
-  bottom: 14px;
-  color: var(--dim);
-}
-@media (hover: none) {
-  .ov-preview {
-    display: none;
+/* ---------- reduced motion ----------
+   Fewer, gentler — not zero. Movement goes; state still reads. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
-}
-
-/* ================= hero / loader ================= */
-
-.hero {
-  position: relative;
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 26px;
-  padding-top: 64px;
-}
-
-.hero-title {
-  font-size: clamp(2.3rem, 6.4vw, 4.7rem);
-}
-.hero-title > span {
-  display: block;
-}
-
-/* ---------- the rotating build-list ----------
-   Every word ships in the markup (crawlers/AI read the sr-only list); the
-   visible ones stack in one grid cell and take turns via a single keyframe
-   offset by --rot-i, so it's pure CSS — no JS, no layout shift. The seam
-   underline is drawn once on the container and the words sweep past it. */
-.hero-rotator {
-  position: relative;
-  width: max-content;
-  max-width: 100%;
-  margin-inline: auto;
-}
-.hero-rotator::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -0.06em;
-  height: 0.045em;
-  background: var(--seam);
-  box-shadow: 0 0 14px 1px color-mix(in srgb, var(--seam) 55%, transparent);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.9s var(--ease-out) 0.3s;
-}
-html[data-intro="rise"] .hero-rotator::after,
-html[data-intro="done"] .hero-rotator::after,
-html:not([data-intro]) .hero-rotator::after {
-  transform: scaleX(1);
-}
-.rot-track {
-  display: inline-grid;
-  /* one cell — the track is as wide as the longest word, so nothing jumps */
-  --rot-step: 2.2s;
-}
-.rot-word {
-  grid-area: 1 / 1;
-  color: var(--seam);
-  white-space: nowrap;
-  animation: rot-cycle calc(var(--rot-n) * var(--rot-step)) var(--ease-out)
-    infinite backwards;
-  animation-delay: calc(var(--rot-i) * var(--rot-step));
-}
-/* One word's slice is 1/6 of the cycle: rise in, hold, sweep out, stay gone.
-   ponytail: percentages are hand-tuned for the 6 words in BUILDS — change the
-   list length and retune the four stops (slice = 100 / count). */
-@keyframes rot-cycle {
-  0% { clip-path: inset(0 0 100% 0); transform: translateY(0.42em); }
-  3%, 13% { clip-path: inset(-25% 0 -25% 0); transform: translateY(0); }
-  16.6% { clip-path: inset(100% 0 0 0); transform: translateY(-0.42em); }
-  16.7%, 100% { clip-path: inset(0 0 100% 0); transform: translateY(0.42em); }
-}
-
-.hero-line {
-  max-width: 34ch;
-  color: var(--dim);
-  font-size: clamp(1rem, 1.7vw, 1.2rem);
-}
-
-.hero-cta {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.hero-meta {
-  margin-top: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.hero-meta a {
-  color: var(--dim);
-  text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--dim) 40%, transparent);
-  transition: color 0.25s var(--ease-out), border-color 0.25s var(--ease-out);
-}
-.hero-meta a:hover {
-  color: var(--bone);
-  border-color: var(--seam);
-}
-
-/* visually hidden, still read by screen readers and crawlers */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* bobbing scroll cue */
-.hero-cue {
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  animation: cue-bob 2.4s ease-in-out infinite;
-}
-.hero-cue::after {
-  content: "";
-  width: 1px;
-  height: 32px;
-  background: linear-gradient(var(--dim), transparent);
-}
-@keyframes cue-bob {
-  0%, 100% { transform: translate(-50%, 0); }
-  50% { transform: translate(-50%, 8px); }
-}
-html[data-intro="run"] .hero-cue {
-  opacity: 0;
-}
-html[data-intro="rise"] .hero-cue {
-  opacity: 0;
-  animation:
-    cue-in 0.5s ease-out 0.8s forwards,
-    cue-bob 2.4s ease-in-out infinite;
-}
-@keyframes cue-in {
-  to { opacity: 1; }
-}
-
-/* ---------- the intro overlay ----------
-   display:none without JS and for return visits. "rise" keeps it mounted
-   while the wordmark travels into the nav; "done" removes it entirely. */
-
-.loader {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  display: none;
-  place-items: center;
-  pointer-events: none;
-}
-html[data-intro="run"] .loader,
-html[data-intro="rise"] .loader {
-  display: grid;
-}
-.loader-veil {
-  position: absolute;
-  inset: 0;
-  background: #000;
-}
-.loader-stage {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(18px, 4vh, 36px);
-}
-/* wrapper rides above the monogram; absolute so it never shifts the draft
-   off-center. It owns centering (translateX(-50%)); the img owns the timeline
-   transform (entrance + the FLIP dock into the nav), so the two never fight. */
-.loader-mascot {
-  position: absolute;
-  left: 50%;
-  bottom: 100%;
-  transform: translateX(-50%);
-  margin-bottom: clamp(20px, 5vh, 48px);
-  width: clamp(84px, 9vw, 132px);
-  pointer-events: none;
-}
-.loader-mascot-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  opacity: 0;
-  will-change: transform, opacity;
-  filter: drop-shadow(0 12px 30px color-mix(in srgb, var(--seam) 40%, transparent));
-}
-
-.loader-word {
-  --dock-x: 0px;
-  --dock-y: 0px;
-  --dock-s: 1;
-  display: flex;
-  align-items: baseline;
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: clamp(3rem, 12vw, 9.5rem);
-  font-weight: 800;
-  letter-spacing: -0.02em; /* matches .nav-logo so the dock lands 1:1 */
-  line-height: 1;
-  white-space: nowrap;
-  will-change: transform;
-  /* the dock — pre-declared expo-out; duration mirrored by DOCK_MS in loader.tsx */
-  transition:
-    transform 1600ms cubic-bezier(0.16, 1, 0.3, 1),
-    letter-spacing 1600ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 1600ms cubic-bezier(0.16, 1, 0.3, 1),
-    font-weight 1600ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-/* FLIP play: one element travels center-to-center, transform only */
-.loader[data-dock="true"] .loader-word {
-  transform: translate(var(--dock-x), var(--dock-y)) scale(var(--dock-s));
-}
-.loader-word > span {
-  display: inline-block;
-}
-/* brand rule at hero scale: "Broom" white, "Builds" purple */
-.loader-word [data-b1],
-.loader-word [data-room] {
-  color: #fff;
-}
-.loader-word [data-b2],
-.loader-word [data-uilds] {
-  color: var(--seam);
-}
-.loader-collapse {
-  overflow: hidden;
-  white-space: nowrap;
-}
-/* collapsed from the very first paint so the draft acts play centered on
-   the B's — the timeline re-measures and expands these on the split */
-html[data-intro="run"] .loader-collapse {
-  max-width: 0;
-}
-
-/* --- Act 1: drafted B — outline, clipped fill, scan-line, guides ------- */
-.loader-b1 {
-  position: relative;
-}
-.b1-outline {
-  color: transparent;
-  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--bone) 55%, transparent);
-}
-.b1-fill {
-  position: absolute;
-  inset: 0;
-  color: #fff;
-  clip-path: inset(0 0 100% 0);
-}
-.b1-scan {
-  position: absolute;
-  top: -1px;
-  left: -18%;
-  right: -18%;
-  height: 2px;
-  background: color-mix(in srgb, var(--seam) 55%, #fff);
-  box-shadow: 0 0 22px 3px color-mix(in srgb, var(--seam) 75%, transparent);
-  opacity: 0;
-}
-.loader-guides {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 195%;
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-  overflow: visible;
-}
-.loader-guides :is(circle, line) {
-  fill: none;
-  stroke: color-mix(in srgb, var(--bone) 28%, transparent);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-}
-html[data-intro="run"] .loader-guides circle {
-  animation: guide-draw 0.8s var(--ease-out) 0.05s forwards;
-}
-html[data-intro="run"] .loader-guides line {
-  animation: guide-draw 0.6s var(--ease-out) 0.3s forwards;
-}
-@keyframes guide-draw {
-  to { stroke-dashoffset: 0; }
-}
-
-/* Drafting ⇄ Inking — masked line swap, same mechanic as the menu toggle */
-.loader-phase {
-  position: relative;
-  overflow: hidden;
-}
-.loader-phase span {
-  display: block;
-  transition: transform 0.45s var(--ease-out);
-}
-.loader-phase span + span {
-  position: absolute;
-  inset: 0;
-  transform: translateY(140%);
-}
-.loader[data-phase="ink"] .loader-phase span:first-child {
-  transform: translateY(-140%);
-}
-.loader[data-phase="ink"] .loader-phase span + span {
-  transform: translateY(0);
-}
-
-/* pre-paint hide — the timeline owns these from its first frame.
-   The guides and fill stay out of this: guides draw via CSS immediately,
-   the fill is already hidden by its clip. */
-html[data-intro="run"] .loader .b1-outline,
-html[data-intro="run"] .loader [data-b2],
-html[data-intro="run"] .loader [data-room],
-html[data-intro="run"] .loader [data-uilds] {
-  opacity: 0;
-}
-
-/* exit flourish — the broom stroke wipes the viewport (never between the B's) */
-.loader-sweep {
-  position: fixed;
-  top: 0;
-  left: -2vw;
-  width: 2px;
-  height: 100vh;
-  background: var(--seam);
-  box-shadow: 0 0 32px 6px color-mix(in srgb, var(--seam) 55%, transparent);
-  opacity: 0;
-  z-index: 80;
-}
-.loader-replay {
-  position: fixed;
-  bottom: 18px;
-  left: 18px;
-  z-index: 60;
-  background: none;
-  border: 1px solid color-mix(in srgb, var(--bone) 15%, transparent);
-  border-radius: 999px;
-  padding: 8px 14px;
-  cursor: pointer;
-  color: var(--dim);
-  transition: color 0.25s, border-color 0.25s;
-}
-.loader-replay:hover {
-  color: var(--seam);
-  border-color: var(--seam);
-}
-
-/* ================= sections (shared) ================= */
-
-.section {
-  padding-block: clamp(90px, 14vh, 150px);
-}
-.section h2 {
-  font-size: clamp(2rem, 5vw, 3.4rem);
-  margin-top: 14px;
-  max-width: 22ch;
-}
-.section-sub {
-  color: var(--muted);
-  max-width: 36rem;
-  margin-top: 18px;
-  font-size: 1.05rem;
-}
-.book-direct {
-  color: var(--bone);
-  text-decoration: none;
-  border-bottom: 1px solid var(--seam);
-  white-space: nowrap;
-  transition: color 0.25s var(--ease-out);
-}
-.book-direct:hover {
-  color: var(--seam);
-}
-
-/* ================= work — interactive index ================= */
-
-.work {
-  position: relative;
-}
-.index {
-  list-style: none;
-  padding: 0;
-  margin-top: 64px;
-  border-top: 1px solid var(--hairline);
-  will-change: transform;
-}
-.index li {
-  border-bottom: 1px solid var(--hairline);
-}
-.index-row {
-  display: grid;
-  grid-template-columns: 3.5rem 1fr auto;
-  grid-template-areas: "num name visit" "num meta visit";
-  align-items: baseline;
-  column-gap: 24px;
-  padding-block: 30px;
-  text-decoration: none;
-  color: inherit;
-  transition: opacity 0.35s ease, transform 0.45s var(--ease-out);
-}
-/* focus one, dim the rest */
-.index[data-focused="true"] li:not([data-on="true"]) .index-row {
-  opacity: 0.28;
-}
-.index li[data-on="true"] .index-row {
-  transform: translateX(14px);
-}
-.index-num {
-  grid-area: num;
-  transition: color 0.3s ease;
-}
-.index li[data-on="true"] .index-num {
-  color: var(--seam);
-}
-.index-name {
-  grid-area: name;
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: clamp(1.9rem, 5vw, 3.4rem);
-  font-variation-settings: "wght" 600;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-  transition: font-variation-settings 0.4s ease;
-}
-.index li[data-on="true"] .index-name {
-  font-variation-settings: "wght" 800;
-}
-.index-meta {
-  grid-area: meta;
-  margin-top: 8px;
-}
-.index-visit {
-  grid-area: visit;
-  align-self: center;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--dim);
-  transition: color 0.3s ease;
-}
-.index-arrow {
-  display: inline-block;
-  transition: transform 0.3s var(--ease-out);
-}
-.index li[data-on="true"] .index-visit {
-  color: var(--seam);
-}
-.index li[data-on="true"] .index-arrow {
-  transform: translate(3px, -3px);
-}
-
-/* cursor-following preview */
-.index-preview {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 6;
-  pointer-events: none;
-  will-change: transform;
-}
-.index-preview[data-show="false"] {
-  visibility: hidden;
-}
-.index-cover {
-  position: relative;
-  width: min(340px, 30vw);
-  aspect-ratio: 4 / 3;
-  /* sits up-right of the cursor so the focused row stays readable */
-  transform: translate(36px, -108%);
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--bone) 12%, transparent);
-  background:
-    linear-gradient(to right, rgba(236, 230, 218, 0.03) 1px, transparent 1px) 0 0 / 46px 46px,
-    linear-gradient(to bottom, rgba(236, 230, 218, 0.03) 1px, transparent 1px) 0 0 / 46px 46px,
-    var(--ink-2);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  animation: preview-in 0.4s var(--ease-out);
-}
-@keyframes preview-in {
-  from {
-    opacity: 0;
-    scale: 0.75;
+  .marquee-track,
+  .dash-flow,
+  .voice-bar {
+    animation: none !important;
   }
-}
-/* the screenshot glimpse — all four stay mounted, active one shows */
-.index-shot {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 0.22s ease;
-}
-.index-shot[data-on="true"] {
-  opacity: 1;
-}
-.index-shot img {
-  object-fit: cover;
-  object-position: top;
-}
-/* slow living pan inside the frame, so the peek reads as a real page */
-.index-shot[data-on="true"] img {
-  animation: shot-pan 7s cubic-bezier(0.77, 0, 0.175, 1) infinite alternate;
-}
-@keyframes shot-pan {
-  from { transform: scale(1.08) translateY(0); }
-  to { transform: scale(1.08) translateY(-4.5%); }
-}
-.index-cover-label {
-  position: absolute;
-  inset: auto 0 0 0;
-  padding-inline: 16px;
-  padding-bottom: 14px;
-  padding-top: 34px;
-  font-size: 9.5px;
-  letter-spacing: 0.12em;
-  color: var(--bone);
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
-  background: linear-gradient(transparent, rgba(8, 9, 11, 0.85));
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-@media (hover: none) {
-  .index-preview {
-    display: none;
+  .stage-reveal {
+    clip-path: none !important;
   }
-}
-
-/* ================= services — morphing marker ================= */
-
-.svc-wrap {
-  position: relative;
-  margin-top: 56px;
-  border-top: 1px solid var(--hairline);
-}
-.svc-marker {
-  position: absolute;
-  left: -22px;
-  top: 0;
-  width: 2px;
-  height: 0;
-  background: var(--seam);
-  box-shadow: 0 0 16px 2px color-mix(in srgb, var(--seam) 55%, transparent);
-  transition: top 0.5s var(--ease-out), height 0.5s var(--ease-out);
-}
-.svc-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.svc-head {
-  display: grid;
-  grid-template-columns: 64px 1fr;
-  gap: 20px;
-  align-items: baseline;
-  width: 100%;
-  padding-block: 26px;
-  background: none;
-  border: none;
-  text-align: left;
-  color: inherit;
-  cursor: pointer;
-}
-.svc-num {
-  transition: color 0.25s var(--ease-out);
-}
-.svc-row[data-on="true"] .svc-num {
-  color: var(--seam);
-}
-.svc-name {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: clamp(1.8rem, 4.6vw, 3.4rem);
-  font-variation-settings: "wght" 620;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  transition: color 0.3s ease, font-variation-settings 0.3s ease;
-}
-.svc-row[data-on="true"] .svc-name {
-  color: var(--seam);
-  font-variation-settings: "wght" 780;
-}
-/* directional ink fill — the seam copy wipes in from the edge the cursor
-   entered (--wipe-hide set by JS), out toward the edge it left */
-.svc-word {
-  position: relative;
-  display: inline-block;
-}
-.svc-word-fill {
-  position: absolute;
-  inset: 0;
-  color: var(--seam);
-  clip-path: var(--wipe-hide, inset(0 100% 0 0));
-  transition: clip-path 0.34s cubic-bezier(0.23, 1, 0.32, 1);
-  pointer-events: none;
-}
-.svc-row[data-on="true"] .svc-word-fill {
-  clip-path: inset(0 0 0 0);
-}
-/* broom-pass streak — fired once per activation via WAAPI, rests invisible */
-.svc-row {
-  position: relative;
-  overflow: hidden;
-}
-.svc-streak {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  background: linear-gradient(
-    100deg,
-    transparent 40%,
-    color-mix(in srgb, var(--seam) 16%, transparent) 50%,
-    transparent 60%
-  );
-  transform: translateX(-101%);
-}
-.svc-tag {
-  color: var(--seam);
-  border: 1px solid color-mix(in srgb, var(--seam) 40%, transparent);
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 10px;
-  animation: tag-pulse 2.4s ease-out infinite;
-}
-@keyframes tag-pulse {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--seam) 35%, transparent); }
-  70% { box-shadow: 0 0 0 9px transparent; }
-  100% { box-shadow: 0 0 0 0 transparent; }
-}
-/* row expands with a grid-rows morph, not a fade */
-.svc-body {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.55s var(--ease-out);
-}
-.svc-row[data-on="true"] .svc-body {
-  grid-template-rows: 1fr;
-}
-.svc-body-inner {
-  overflow: hidden;
-  padding-left: 84px;
-}
-.svc-desc {
-  color: var(--muted);
-  font-size: clamp(1rem, 1.6vw, 1.15rem);
-  padding-bottom: 26px;
-  max-width: 46rem;
-}
-
-/* ================= process — the sweep ================= */
-
-.sweep-track {
-  margin-top: 72px;
-}
-.sweep-track svg {
-  display: block;
-  overflow: visible;
-}
-[data-sweep-line] {
-  stroke: var(--seam);
-  stroke-width: 2;
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--seam) 60%, transparent));
-}
-.steps {
-  margin-top: 44px;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 28px;
-  list-style: none;
-  padding: 0;
-}
-.step-num {
-  display: block;
-}
-.step-mask {
-  display: block;
-  overflow: hidden;
-  margin-top: 12px;
-}
-.step-mask h3 {
-  font-size: 1.25rem;
-  margin: 0;
-}
-.step-mask p {
-  color: var(--muted);
-  font-size: 0.95rem;
-  margin: 0;
-}
-
-/* ================= booking — curtain reveal ================= */
-
-.book {
-  position: relative;
-  overflow: clip;
-}
-.book-backdrop {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(16rem, 48vw, 42rem);
-  line-height: 1;
-  color: color-mix(in srgb, var(--bone) 3.5%, transparent);
-  user-select: none;
-  pointer-events: none;
-}
-.book-curtain {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 2px;
-  height: 100%;
-  background: var(--seam);
-  box-shadow: 0 0 32px 6px color-mix(in srgb, var(--seam) 55%, transparent);
-  opacity: 0;
-  pointer-events: none;
-}
-.book-inner {
-  position: relative;
-}
-@media (prefers-reduced-motion: no-preference) {
-  html[data-intro] .book .book-inner {
-    clip-path: inset(0 100% 0 0);
-    transition: clip-path 1.1s var(--ease-out) 0.1s;
-  }
-  html[data-intro] .book[data-reveal="true"] .book-inner {
-    clip-path: inset(0 0 0 0);
-  }
-  .book[data-reveal="true"] .book-curtain {
-    animation: curtain-sweep 1.2s var(--ease-out);
-  }
-}
-@keyframes curtain-sweep {
-  0% { opacity: 0; transform: translateX(0); }
-  10% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { opacity: 0; transform: translateX(100vw); }
-}
-#book .calendly-frame {
-  margin-top: 48px;
-}
-.calendly-fallback {
-  padding: 48px;
-  color: var(--muted);
-}
-.calendly-fallback a {
-  color: var(--seam);
-}
-
-/* ================= footer — the purple block ================= */
-
-.footer {
-  background: var(--seam);
-  color: #fff;
-  padding-top: 56px;
-  overflow: clip;
-}
-/* everything in the footer runs end to end — gutter only, no max-width */
-.footer .wrap {
-  max-width: none;
-}
-.footer .label {
-  color: rgba(255, 255, 255, 0.65);
-}
-.footer-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-  padding-bottom: 48px;
-}
-.footer-pitch {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(1.3rem, 2.6vw, 1.8rem);
-  letter-spacing: -0.02em;
-  max-width: 26ch;
-  text-wrap: balance;
-}
-.footer .btn-ghost {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.4);
-}
-.footer .btn-ghost:hover {
-  border-color: #fff;
-  color: #fff;
-}
-
-/* slow services marquee */
-.marquee {
-  overflow: clip;
-  border-block: 1px solid rgba(255, 255, 255, 0.22);
-  padding-block: 13px;
-}
-.marquee-track {
-  display: flex;
-  width: max-content;
-  animation: marquee 36s linear infinite;
-}
-.marquee-line {
-  white-space: nowrap;
-  color: rgba(255, 255, 255, 0.65);
-}
-@keyframes marquee {
-  to { transform: translateX(-50%); }
-}
-
-/* giant end-to-end wordmark — letters rise from masks (see KineticMark).
-   Escapes the gutter: glyphs run viewport edge to viewport edge. */
-.footer-mark {
-  display: flex;
-  justify-content: center;
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 16.7vw; /* "BroomBuilds" glyph run ≈ 100vw at this size */
-  letter-spacing: -0.04em;
-  line-height: 1;
-  white-space: nowrap;
-  user-select: none;
-  padding-top: 44px;
-}
-.footer-mark .fm-broom {
-  color: #fff;
-}
-.footer-mark .fm-builds {
-  color: var(--ink);
-}
-.fm-mask {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: bottom;
-}
-.fm-ch {
-  display: inline-block;
-}
-
-.footer-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-  padding-block: 32px;
-  border-top: 1px solid rgba(255, 255, 255, 0.22);
-  margin-top: 48px;
-}
-.footer-contact {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.footer-mail {
-  color: #fff;
-  text-decoration: none;
-  font-size: 1.05rem;
-  transition: color 0.25s var(--ease-out);
-}
-.footer-mail:hover {
-  color: var(--ink);
-}
-.footer-socials {
-  display: flex;
-  gap: 22px;
-}
-.footer-socials a {
-  color: rgba(255, 255, 255, 0.75);
-  text-decoration: none;
-  font-size: 0.95rem;
-  transition: color 0.25s var(--ease-out);
-}
-.footer-socials a:hover {
-  color: var(--ink);
-}
-.footer-clock {
-  font-variant-numeric: tabular-nums;
-}
-.footer-legal {
-  padding-bottom: 28px;
-}
-
-/* ================= responsive ================= */
-
-@media (max-width: 960px) {
-  .steps {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .svc-body-inner {
-    padding-left: 0;
-  }
-  .svc-head {
-    grid-template-columns: 48px 1fr;
-  }
-  .svc-marker {
-    left: -10px;
-  }
-}
-
-@media (max-width: 700px) {
-  .nav-inner {
-    height: 62px;
-  }
-  .nav[data-compact="true"] .nav-inner {
-    height: 54px;
-  }
-  .nav-toggle {
-    padding: 8px 16px;
-  }
-  .ov-footer {
-    justify-content: center;
-    text-align: center;
-  }
-  /* full-viewport animated grain is a repaint tax on phones */
-  .grain {
-    display: none;
-  }
-  .steps {
-    grid-template-columns: 1fr;
-  }
-  .index-row {
-    grid-template-columns: 2.6rem 1fr;
-    grid-template-areas: "num name" "num meta" "num visit";
-  }
-  .index-visit {
-    justify-self: start;
-    margin-top: 12px;
-  }
-  .index li[data-on="true"] .index-row {
+  .stage-reveal .stage-item {
+    opacity: 1;
     transform: none;
   }
-}
-
-@media (max-width: 520px) {
-  .hero-cta .btn {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-/* ================= reduced motion — every signature degrades ============ */
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  html[data-intro="run"] .intro-rise,
-  html[data-intro="rise"] .intro-rise {
-    animation: none;
-    clip-path: none;
-    transform: none;
-  }
-  html[data-intro="run"] .hero-cue,
-  html[data-intro="rise"] .hero-cue {
-    opacity: 1;
-  }
-  .grain,
-  .cursor,
-  .dust,
-  .index-preview,
-  .ov-preview,
-  .loader-sweep,
-  .book-curtain {
-    display: none;
-  }
-  .marquee-track {
-    animation: none;
-  }
-  .svc-tag,
-  .hero-cue {
-    animation: none;
-  }
-  .nav,
-  .nav-inner,
-  .nav-logo .wm-broom,
-  .nav-logo .wm-builds,
-  .nav-toggle-line,
-  .ov-line {
-    transition-duration: 0.01s;
-  }
-  .nav-toggle-line,
-  .index-row,
-  .index-name,
-  .svc-body,
-  .svc-word-fill {
-    transition-duration: 0.01s;
-  }
-  .svc-streak {
-    display: none;
-  }
-  .hero-rotator::after {
-    transition: none;
-    transform: scaleX(1);
-  }
-  /* no cycling — the first word simply stands */
-  .rot-word {
-    animation: none;
-  }
-  .rot-word:not(:first-child) {
-    display: none;
-  }
-}
-
-/* ---------- 404 / error screens (shared by not-found.tsx + error.tsx) ---- */
-
-.nf {
-  position: relative;
-  min-height: 100svh;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  padding: 120px 0;
-}
-/* brand bar, pinned top-left like the site nav */
-.nf-nav {
-  position: absolute;
-  top: clamp(20px, 4vh, 36px);
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: flex-start;
-}
-.nf-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 22px;
-}
-.nf-brand {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 22px;
-  letter-spacing: -0.01em;
-}
-.nf-tag {
-  color: var(--dim);
-}
-.nf-code {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(4px, 2vw, 20px);
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(88px, 22vw, 260px);
-  line-height: 0.9;
-  letter-spacing: -0.04em;
-}
-/* rise once on load, then breathe forever — the second animation is delayed
-   past the first so the two never fight over transform. */
-.nf-d {
-  display: inline-block;
-  color: #fff;
-  animation:
-    nf-rise 0.9s var(--ease-out) backwards,
-    nf-float 6s ease-in-out infinite;
-  animation-delay: calc(var(--i) * 0.12s), calc(var(--i) * 0.2s + 0.9s);
-}
-.nf-mascot {
-  width: clamp(120px, 24vw, 230px);
-  height: auto;
-  animation:
-    nf-rise 0.9s var(--ease-out) backwards,
-    nf-float 6s ease-in-out 0.9s infinite;
-}
-@keyframes nf-rise {
-  from {
-    transform: translateY(40%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-@keyframes nf-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-3%);
-  }
-}
-.nf-title {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(19px, 4.2vw, 44px);
-  letter-spacing: -0.02em;
-  white-space: nowrap; /* keep it on one line at every width */
-}
-.nf-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  justify-content: center;
-  margin-top: 10px;
-}
-/* the primary way out — sized up so it's the first thing the eye lands on */
-.nf-home {
-  font-size: 1.05rem;
-  padding: 16px 34px;
-}
-.nf-links {
-  display: flex;
-  gap: 22px;
-  margin-top: 18px;
-}
-.nf-links a {
-  color: var(--dim);
-  transition: color 0.3s var(--ease-out);
-}
-.nf-links a:hover {
-  color: var(--seam);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nf-d,
-  .nf-mascot {
-    animation: none;
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
   }
 }

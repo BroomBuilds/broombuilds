@@ -18,13 +18,13 @@ export const site = {
   url: SITE_URL,
   tagline: "Design, Build & AI Automation Studio",
   positioning:
-    "We design and build websites, web apps, and AI automations that load in under a second and turn visitors into booked calls.",
+    "We design and build websites, web apps and custom AI solutions: agents, automations and AI products that do real work for your business.",
   description:
-    "BroomBuilds is a design, build, and AI automation studio. We design and build websites, landing pages, web apps, brand systems, and AI automations — with SEO and performance baked in, so they rank, load in under a second, and turn visitors into booked calls.",
+    "BroomBuilds is a design, build and AI studio. We design and build websites, landing pages, web apps and brand systems, set them up to be found on Google and recommended by AI assistants, and build custom AI solutions: agents that answer customers and book calls, automations that run operations, and AI products built from scratch.",
   /* ~150 chars — the <meta name="description"> snippet. Kept short so Google
      shows it whole; `description` above stays long for OG/schema/manifest. */
   metaDescription:
-    "Design, build & AI automation studio. Fast websites, landing pages, web apps & AI automations — built to rank, load in under a second, and book you calls.",
+    "Design, build & AI studio. Websites that win customers, and custom AI agents, automations and products that do the work.",
   keywords: [
     "BroomBuilds",
     "Broom Builds",
@@ -59,7 +59,7 @@ export const site = {
   phone: "+91 9580868588",
   /* E.164 — for tel: links and schema. Keep in sync with `phone`. */
   phoneHref: "+919580868588",
-  location: "Lucknow / Worldwide",
+  location: "Worldwide",
   founded: "2026",
   locale: "en_US",
   twitter: "@broombuilds",
@@ -70,11 +70,10 @@ export const site = {
   },
 } as const;
 
-/** In-page sections — drives the sitemap and anchor nav from one list. */
+/** In-page sections — drives the nav and footer links from one list. */
 export const sections = [
-  { id: "top", label: "Home", priority: 1.0 },
-  { id: "work", label: "Work", priority: 0.9 },
-  { id: "services", label: "Services", priority: 0.8 },
-  { id: "process", label: "Process", priority: 0.6 },
-  { id: "book", label: "Book a call", priority: 0.9 },
+  { id: "services", label: "Services" },
+  { id: "work", label: "Work" },
+  { id: "process", label: "Process" },
+  { id: "faq", label: "FAQ" },
 ] as const;

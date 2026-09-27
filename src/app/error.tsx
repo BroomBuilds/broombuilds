@@ -2,8 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import type { CSSProperties } from "react";
-import Wordmark from "./components/wordmark";
+import Wordmark, { BrandMark } from "./components/wordmark";
 
 /* Next 16: the retry prop is `unstable_retry` (was `reset` pre-16). */
 export default function Error({
@@ -18,30 +17,31 @@ export default function Error({
   }, [error]);
 
   return (
-    <main className="nf" role="main">
-      <div className="nf-inner wrap">
-        <Link href="/" className="nf-brand" aria-label="BroomBuilds — home">
-          <Wordmark />
+    <main className="flex min-h-dvh flex-col">
+      <header className="container-page flex h-(--nav-h) items-center">
+        <Link href="/" className="flex items-center gap-2.5" aria-label="BroomBuilds home">
+          <BrandMark size={32} />
+          <Wordmark className="text-[21px]" />
         </Link>
-        <p className="nf-tag label">Error 500</p>
-        <div className="nf-code" aria-hidden>
-          <span className="nf-d" style={{ "--i": 0 } as CSSProperties}>5</span>
-          <span className="nf-d nf-o" style={{ "--i": 1 } as CSSProperties}>0</span>
-          <span className="nf-d" style={{ "--i": 2 } as CSSProperties}>0</span>
-        </div>
-        <h1 className="nf-title">Something broke on our end.</h1>
-        <p className="nf-copy">
-          A gremlin in the wiring — not your fault. Try again, or head home.
-        </p>
-        <div className="nf-actions">
+      </header>
+      <div className="container-page flex flex-1 flex-col items-center justify-center pb-24 text-center">
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted">Error 500</p>
+        <h1 className="mt-6 text-[40px] md:text-[56px]">
+          Something broke <span className="text-lilac">on our end.</span>
+        </h1>
+        <p className="mt-4 max-w-[40ch] text-[17px] text-ink-muted">A gremlin in the wiring, not your fault. Try again, or head home.</p>
+        <div className="mt-10 flex flex-wrap justify-center gap-3">
           <button
             type="button"
             onClick={() => unstable_retry()}
-            className="btn btn-primary"
+            className="inline-flex h-[52px] items-center rounded-full bg-ink px-7 font-mono text-[12.5px] font-medium uppercase tracking-[0.1em] text-paper transition-[transform,background-color,color] duration-200 ease-out hover:bg-plum hover:text-white active:scale-[0.97]"
           >
             Try again
           </button>
-          <Link href="/" className="btn btn-ghost">
+          <Link
+            href="/"
+            className="inline-flex h-[52px] items-center rounded-full px-7 font-mono text-[12.5px] font-medium uppercase tracking-[0.1em] text-ink ring-1 ring-inset ring-ink/25 transition-[transform,color,box-shadow] duration-200 ease-out hover:text-lilac hover:ring-lilac active:scale-[0.97]"
+          >
             Back home
           </Link>
         </div>
