@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { motion, useMotionTemplate, useScroll, useTransform } from "motion/react";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { sections, site } from "@/lib/site";
 import Wordmark from "./wordmark";
 import BookTrigger from "./book-trigger";
@@ -28,19 +28,7 @@ export default function Footer() {
   return (
     <footer ref={ref} className="grain relative overflow-hidden bg-night text-ink" aria-label="Footer">
       <div aria-hidden className="dot-grid-night absolute inset-0" />
-      <div className="container-page relative pt-16 md:pt-24">
-        <div className="flex flex-col items-start justify-between gap-6 border-b border-night-line pb-12 md:flex-row md:items-end md:gap-8 md:pb-14">
-          <p className="font-display text-[32px] font-bold leading-[1.05] tracking-[-0.03em] sm:text-[40px] md:text-[52px]">
-            Have a project? <span className="text-lilac">Let’s talk.</span>
-          </p>
-          <BookTrigger
-            className="group inline-flex h-12 items-center gap-2.5 rounded-full bg-ink px-6 font-mono text-[12.5px] font-medium uppercase tracking-[0.1em] text-paper transition-[transform,background-color,color] duration-200 ease-out hover:bg-plum hover:text-white active:scale-[0.97]"
-          >
-            Book a call
-            <ArrowRight className="h-4 w-4 transition-transform duration-200 [@media(hover:hover)]:group-hover:translate-x-0.5" />
-          </BookTrigger>
-        </div>
-
+      <div className="container-page relative pt-4 md:pt-8">
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 py-14 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="col-span-2 lg:col-span-1">
             <Wordmark tone="night" className="text-[22px]" />

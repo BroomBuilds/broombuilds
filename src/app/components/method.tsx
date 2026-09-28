@@ -9,6 +9,16 @@ import { stepDiagrams } from "./method-diagrams";
 import { EASE, MountInView, useSeen } from "./motion";
 import { Panel, SectionHead } from "./ui";
 
+/** Phone-width box per diagram: tall enough for it, no taller. */
+const mobileBox: Record<string, string> = {
+  listen: "",
+  design: "h-[400px] [&>*]:h-full",
+  build: "h-[340px] [&>*]:h-full",
+  automate: "h-[340px] [&>*]:h-full",
+  launch: "h-[330px] [&>*]:h-full",
+  grow: "h-[360px] [&>*]:h-full",
+};
+
 const steps = method.groups.flatMap((g) => g.steps.map((s) => ({ ...s, group: g.name })));
 const num = (i: number) => String(i + 1).padStart(2, "0");
 
@@ -133,7 +143,7 @@ export default function Method() {
       </div>
 
       {/* ── Mobile / tablet, stacked ─────────────────────────────────── */}
-      <ol className="container-page mt-14 space-y-16 pb-8 lg:hidden">
+      <ol className="container-page mt-12 space-y-14 pb-8 lg:hidden">
         {steps.map((s, i) => {
           const D = stepDiagrams[s.id];
           return (
@@ -143,10 +153,10 @@ export default function Method() {
                 <span className="h-px w-6 bg-line-strong" />
                 {s.group} · {s.label}
               </p>
-              <h3 className="mt-3 text-[28px]">{s.title}</h3>
+              <h3 className="mt-3 text-[28px] leading-[1.08]">{s.title}</h3>
               <p className="mt-3 text-[16px] leading-[1.6] text-ink-muted">{s.body}</p>
-              <Panel className="mt-6 p-4">
-                <MountInView className="min-h-[340px] [&>*]:min-h-[340px]">
+              <Panel className="mt-6 p-3 sm:p-4">
+                <MountInView className={mobileBox[s.id] || "min-h-[300px]"}>
                   <D />
                 </MountInView>
               </Panel>

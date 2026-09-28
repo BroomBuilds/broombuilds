@@ -21,10 +21,10 @@ const REST = starts[starts.length - 1] + (hero.lines.at(-1)!.verb + " " + hero.l
 export default function Hero() {
   return (
     <section id="top" aria-labelledby="hero-title" className="relative">
-      <div className="container-page flex min-h-svh flex-col items-center justify-center pb-16 pt-(--nav-h) text-center">
+      <div className="container-page flex min-h-svh flex-col items-center justify-center pb-2 pt-[calc(var(--nav-h)+56px)] text-center md:pb-16 md:pt-(--nav-h)">
         <h1
           id="hero-title"
-          className="text-[clamp(40px,11vw,52px)] leading-[1.02] tracking-[-0.035em] text-ink sm:whitespace-nowrap sm:text-[56px] md:text-[64px] lg:text-[68px]"
+          className="whitespace-nowrap text-[min(calc((100vw-40px)/10.3),48px)] leading-[1.04] tracking-[-0.035em] text-ink sm:text-[56px] md:text-[64px] lg:text-[68px]"
         >
           {hero.lines.map((line, i) => (
             <span key={line.verb} className="block">

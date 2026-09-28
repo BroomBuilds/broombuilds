@@ -5,7 +5,6 @@ import Image from "next/image";
 import {
   Bot,
   Check,
-  Database,
   Hourglass,
   Mic,
   Play,
@@ -473,52 +472,152 @@ export function N8nPlate() {
   );
 }
 
-/** Phone width: the same workflow, in rows that wrap to fit. */
-export function N8nCompact() {
-  const m = (logo: string, color: string) => (
-    <span className="logo-mask h-4 w-4" style={{ backgroundColor: color, ["--logo" as string]: `url(/logos/${logo}.svg)` }} />
-  );
-  const steps: { label: string; icon: ReactNode }[] = [
-    { label: "Website form", icon: <Webhook className="h-4 w-4 text-[#ff6d5a]" /> },
-    { label: "WhatsApp", icon: m("whatsapp", "#25D366") },
-    { label: "AI Agent", icon: <Bot className="h-4 w-4" /> },
-    { label: "Route by intent", icon: <Split className="h-4 w-4 rotate-90 text-[#b7a4ff]" /> },
-    { label: "Calendar", icon: m("googlecalendar", "#4285F4") },
-    { label: "Confirm", icon: m("whatsapp", "#25D366") },
-    { label: "HubSpot", icon: m("hubspot", "#FF7A59") },
-    { label: "Gmail", icon: m("gmail", "#EA4335") },
-    { label: "Slack", icon: m("slack", "#E01E5A") },
-  ];
+/* ── Phone width: the same workflow, top to bottom ───────────────────────── */
+
+const tint = (logo: string, color: string, size = 20) => (
+  <span
+    className="logo-mask shrink-0"
+    style={{ width: size, height: size, backgroundColor: color, ["--logo" as string]: `url(/logos/${logo}.svg)` }}
+  />
+);
+
+/** An n8n node as the editor draws it: a square tile, label underneath. */
+function MiniNode({ icon, label, sub, trigger }: { icon: ReactNode; label: string; sub?: string; trigger?: boolean }) {
   return (
-    <div className="rounded-[18px] p-4" style={{ background: N.bg, color: N.text }}>
-      <p className="mb-3 flex items-center gap-2 text-[12px]" style={{ color: N.sub }}>
-        {m("n8n", "#EA4B71")}
-        Enquiry to booking agent
-        <span className="ml-auto flex items-center gap-1.5">
+    <div className="flex flex-col items-center">
+      <div className="relative">
+        {trigger && <Zap className="absolute -left-3 top-1/2 h-3 w-3 -translate-y-1/2 fill-[#ff6d5a] text-[#ff6d5a]" />}
+        <div
+          className="grid h-11 w-11 place-items-center"
+          style={{ background: N.node, border: `1.5px solid ${N.ok}`, borderRadius: trigger ? "22px 8px 8px 22px" : 9 }}
+        >
+          {icon}
+        </div>
+        <span className="absolute -bottom-1.5 -right-1.5 grid h-3.5 w-3.5 place-items-center rounded-full" style={{ background: N.ok }}>
+          <Check className="h-2.5 w-2.5 text-white" strokeWidth={3.5} />
+        </span>
+      </div>
+      <p className="mt-1.5 text-center text-[11px] font-semibold leading-tight" style={{ color: N.text }}>
+        {label}
+      </p>
+      {sub && (
+        <p className="text-center text-[9.5px] leading-tight" style={{ color: N.sub }}>
+          {sub}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Connectors between rows. Every `from` x (percent) joins every `to` x,
+ * S-curved, with a marching pulse and an arrowhead on each end point.
+ */
+function Wire({ from, to, h = 34 }: { from: number[]; to: number[]; h?: number }) {
+  const paths = from.flatMap((a) => to.map((b) => `M ${a} 0 C ${a} 55, ${b} 45, ${b} 90`));
+  return (
+    <div className="relative" style={{ height: h }}>
+      <svg aria-hidden viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible">
+        {paths.map((d) => (
+          <g key={d}>
+            <path d={d} fill="none" stroke={N.line} strokeWidth={1.4} vectorEffect="non-scaling-stroke" />
+            <path d={d} fill="none" stroke="#b58bd3" strokeWidth={1.4} vectorEffect="non-scaling-stroke" className="dash-flow" opacity={0.85} />
+          </g>
+        ))}
+      </svg>
+      {to.map((x) => (
+        <svg key={x} aria-hidden viewBox="0 0 10 7" className="absolute bottom-0 h-[7px] w-[10px] -translate-x-1/2" style={{ left: `${x}%` }}>
+          <path d="M0 0 L10 0 L5 7 Z" fill="#b58bd3" />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+const LANES = [
+  { name: "Book it", a: { icon: tint("googlecalendar", "#4285F4"), label: "Calendar", sub: "Site visit" }, b: { icon: tint("whatsapp", "#25D366"), label: "WhatsApp", sub: "Confirm" } },
+  { name: "Quote it", a: { icon: tint("hubspot", "#FF7A59"), label: "HubSpot", sub: "New deal" }, b: { icon: tint("gmail", "#EA4335"), label: "Gmail", sub: "Send quote" } },
+  { name: "Hand off", a: { icon: tint("slack", "#E01E5A"), label: "Slack", sub: "Ping a human" }, b: { icon: tint("googlesheets", "#34A853"), label: "Sheets", sub: "Log lead" } },
+];
+const THIRDS = [16.67, 50, 83.33];
+
+export function N8nCompact() {
+  return (
+    <div className="overflow-hidden rounded-[18px]" style={{ background: N.bg, color: N.text }}>
+      {/* editor bar */}
+      <div className="flex items-center gap-2 border-b border-white/10 bg-[#1f1f20] px-4 py-2.5 text-[11.5px]">
+        {tint("n8n", "#EA4B71", 16)}
+        <span className="truncate font-semibold">Enquiry to booking agent</span>
+        <span className="ml-auto flex shrink-0 items-center gap-1.5" style={{ color: N.sub }}>
           <span className="h-1.5 w-1.5 rounded-full bg-[#3cb179]" /> Active
         </span>
-      </p>
-      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-2">
-        {steps.map((n, i) => (
-          <span key={n.label} className="flex items-center gap-1.5">
-            <span
-              className="flex items-center gap-2 whitespace-nowrap rounded-[10px] px-2.5 py-2 text-[12px] font-medium"
-              style={{ background: N.node, border: `1.5px solid ${N.ok}` }}
-            >
-              {n.icon}
-              {n.label}
-            </span>
-            {i < steps.length - 1 && (
-              <span aria-hidden className="text-[12px]" style={{ color: N.line }}>
-                →
-              </span>
-            )}
-          </span>
-        ))}
       </div>
-      <p className="mt-3 flex items-center gap-1.5 text-[11px]" style={{ color: N.sub }}>
-        <Database className="h-3 w-3" /> Remembers every customer · OpenAI + Postgres memory
-      </p>
+
+      <div
+        className="px-4 pb-4 pt-5"
+        style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px)", backgroundSize: "16px 16px" }}
+      >
+        {/* two ways in */}
+        <div className="grid grid-cols-2">
+          <MiniNode trigger icon={<Webhook className="h-5 w-5 text-[#ff6d5a]" />} label="Website form" sub="New enquiry" />
+          <MiniNode trigger icon={tint("whatsapp", "#25D366")} label="WhatsApp" sub="New message" />
+        </div>
+        <Wire from={[25, 75]} to={[50]} />
+
+        {/* the agent, with what it thinks with */}
+        <div className="mx-auto w-full max-w-[300px] rounded-[12px] p-3" style={{ background: N.node, border: `1.5px solid ${N.ok}` }}>
+          <div className="flex items-center gap-2.5">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[8px] bg-white/10">
+              <Bot className="h-5 w-5" />
+            </span>
+            <span className="leading-tight">
+              <span className="block text-[13px] font-semibold">AI Agent</span>
+              <span className="block text-[10.5px]" style={{ color: N.sub }}>
+                Replies in seconds, in your voice
+              </span>
+            </span>
+          </div>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 border-t border-white/10 pt-2.5 text-[9.5px]" style={{ color: N.sub }}>
+            {[
+              { k: "Model", icon: tint("openai", "#ffffff", 12), v: "OpenAI" },
+              { k: "Memory", icon: tint("postgresql", "#6b9bff", 12), v: "Postgres" },
+              { k: "Tool", icon: tint("googlecalendar", "#4285F4", 12), v: "Calendar" },
+            ].map((t) => (
+              <span key={t.k} className="flex flex-col items-center gap-1 rounded-[6px] bg-white/5 py-1.5">
+                {t.icon}
+                <span>
+                  {t.k} · <span style={{ color: N.text }}>{t.v}</span>
+                </span>
+              </span>
+            ))}
+          </div>
+        </div>
+        <Wire from={[50]} to={[50]} h={26} />
+
+        {/* the switch */}
+        <MiniNode icon={<Split className="h-5 w-5 rotate-90 text-[#b7a4ff]" />} label="Route by intent" sub="3 rules" />
+        <Wire from={[50]} to={THIRDS} />
+
+        {/* three lanes, two steps each */}
+        <div className="grid grid-cols-3">
+          {LANES.map((l) => (
+            <div key={l.name} className="flex flex-col items-center">
+              <span className="mb-2 rounded-[4px] bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em]" style={{ color: N.sub }}>
+                {l.name}
+              </span>
+              <MiniNode {...l.a} />
+              <div className="w-full">
+                <Wire from={[50]} to={[50]} h={20} />
+              </div>
+              <MiniNode {...l.b} />
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-4 flex items-center justify-center gap-1.5 text-[10.5px]" style={{ color: N.sub }}>
+          <span className="h-1.5 w-1.5 rounded-full bg-[#3cb179]" /> Succeeded in 2.4s · 1,284 runs this month
+        </p>
+      </div>
     </div>
   );
 }

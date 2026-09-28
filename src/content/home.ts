@@ -54,7 +54,7 @@ export const questions = {
 export const answer = {
   question: "What is BroomBuilds?",
   answer:
-    "BroomBuilds is a design, build and AI studio working with businesses worldwide. We design and build websites, landing pages and web apps, set them up to be found on Google and recommended by AI assistants, and build custom AI solutions: agents that answer customers and book calls, automations that run operations, and AI products built from scratch.",
+    "BroomBuilds is a design, build and AI studio. We make websites and web apps that rank on Google and get recommended by AI, and custom AI agents and automations that answer customers, book calls and handle the busywork.",
   points: [
     "Websites & landing pages",
     "Web apps & AI products",
@@ -62,6 +62,7 @@ export const answer = {
     "Google + AI search",
     "AI agents & automation",
     "Custom AI solutions",
+    "Hosting & upkeep",
     "Clients worldwide",
   ],
 };
@@ -306,8 +307,8 @@ export const faq = {
 };
 
 export const cta = {
-  before: "Let’s build something",
-  accent: "clean.",
+  before: "Let’s build what’s",
+  accent: "next.",
   lead: "Thirty minutes. Bring the site you have and leave with a plan for the one you need. If we’re not the right fit, we’ll say so.",
 };
 

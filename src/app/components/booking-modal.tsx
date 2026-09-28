@@ -133,13 +133,13 @@ export default function BookingModal() {
           onClick={openBooking}
           aria-haspopup="dialog"
           aria-label="Book a call with us"
-          className="group relative flex h-14 items-center gap-2.5 rounded-full bg-ink pl-1.5 pr-5 text-paper shadow-float transition-[transform,background-color,color] duration-200 ease-out hover:bg-plum hover:text-white active:scale-[0.96] sm:w-14 sm:justify-center sm:p-0"
+          className="group relative flex h-12 items-center gap-2 rounded-full bg-card/85 pl-1 pr-4 text-ink shadow-float ring-1 ring-inset ring-line backdrop-blur-xl transition-[transform,background-color,color] duration-200 ease-out hover:bg-plum hover:text-white active:scale-[0.96] sm:h-14 sm:w-14 sm:justify-center sm:bg-ink sm:p-0 sm:text-paper sm:ring-0"
         >
-          <span className="grid h-11 w-11 place-items-center rounded-full bg-paper">
-            <Image src="/mascot.png" alt="" width={34} height={34} />
+          <span className="grid h-10 w-10 place-items-center rounded-full bg-paper sm:h-11 sm:w-11">
+            <Image src="/mascot.png" alt="" width={34} height={34} className="h-[30px] w-[30px] sm:h-[34px] sm:w-[34px]" />
           </span>
-          <span className="font-mono text-[12px] font-medium uppercase tracking-[0.1em] sm:hidden">Book a call</span>
-          <span aria-hidden className="absolute right-0.5 top-0.5 h-3 w-3 rounded-full border-2 border-ink bg-live group-hover:border-plum" />
+          <span className="text-[13.5px] font-medium sm:hidden">Book a call</span>
+          <span aria-hidden className="absolute left-8 top-0.5 h-2.5 w-2.5 rounded-full border-2 border-card bg-live sm:left-auto sm:right-0.5 sm:h-3 sm:w-3 sm:border-ink sm:group-hover:border-plum" />
         </button>
       </div>
 

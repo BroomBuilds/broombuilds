@@ -148,7 +148,9 @@ export default function Services() {
       const l = el.offsetLeft;
       const r = list.offsetWidth - (l + el.offsetWidth);
       const b = list.offsetHeight - (t + el.offsetHeight);
-      setClip(`inset(${t}px ${r}px ${b}px ${l}px round 999px)`);
+      // Phones: squarer segments want a squarer highlight.
+      const round = list.offsetWidth < 560 ? 14 : 999;
+      setClip(`inset(${t}px ${r}px ${b}px ${l}px round ${round}px)`);
     };
     update();
     const ro = new ResizeObserver(update);
@@ -197,9 +199,10 @@ export default function Services() {
             onFocusCapture={(e) => setKeyboard((e.target as HTMLElement).matches(":focus-visible"))}
             onBlurCapture={() => setKeyboard(false)}
           >
-            {/* Tabs: a 2×2 grid on phones, one row from sm up. */}
-            <div className="relative w-full rounded-[26px] bg-ink/[0.05] p-1.5 sm:w-fit sm:rounded-full">
-              <div ref={listRef} role="tablist" aria-label="Services" className="relative grid grid-cols-2 gap-1 sm:flex sm:gap-0" onKeyDown={onKey}>
+            {/* Tabs: one row of four equal segments on phones (number over
+                label), a pill row from sm up. */}
+            <div className="relative w-full rounded-[18px] bg-ink/[0.05] p-1.5 sm:w-fit sm:rounded-full">
+              <div ref={listRef} role="tablist" aria-label="Services" className="relative grid grid-cols-4 sm:flex" onKeyDown={onKey}>
                 {tabs.map((t, i) => (
                   <button
                     key={t.id}
@@ -211,28 +214,28 @@ export default function Services() {
                     aria-controls="services-panel"
                     tabIndex={active === t.id ? 0 : -1}
                     onClick={() => choose(t.id)}
-                    className="flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-medium text-ink-muted transition-colors duration-200 hover:text-ink sm:justify-start md:h-12 md:px-7 md:text-[16px]"
+                    className="flex h-[58px] min-w-0 shrink-0 flex-col items-center justify-center gap-0.5 rounded-[14px] px-1 text-[13.5px] font-medium text-ink-muted transition-colors duration-200 hover:text-ink sm:h-11 sm:flex-row sm:justify-start sm:gap-2 sm:rounded-full sm:px-5 sm:text-[15px] md:h-12 md:px-7 md:text-[16px]"
                   >
-                    <span className="font-mono text-[11px] opacity-60">0{i + 1}</span>
+                    <span className="font-mono text-[10px] opacity-60 sm:text-[11px]">0{i + 1}</span>
                     {t.label}
                   </button>
                 ))}
                 {/* The plum copy, clipped to the active tab. */}
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 grid grid-cols-2 gap-1 rounded-[22px] bg-plum transition-[clip-path] duration-300 ease-out sm:flex sm:gap-0 sm:rounded-full"
+                  className="pointer-events-none absolute inset-0 grid grid-cols-4 rounded-[14px] bg-plum transition-[clip-path] duration-300 ease-out sm:flex sm:rounded-full"
                   style={{ clipPath: clip }}
                 >
                   {tabs.map((t, i) => (
                     <span
                       key={t.id}
-                      className="relative flex h-11 shrink-0 items-center justify-center gap-2 px-5 text-[15px] font-medium text-ink sm:justify-start md:h-12 md:px-7 md:text-[16px]"
+                      className="relative flex h-[58px] min-w-0 shrink-0 flex-col items-center justify-center gap-0.5 px-1 text-[13.5px] font-medium text-ink sm:h-11 sm:flex-row sm:justify-start sm:gap-2 sm:px-5 sm:text-[15px] md:h-12 md:px-7 md:text-[16px]"
                     >
-                      <span className="font-mono text-[11px] opacity-70">0{i + 1}</span>
+                      <span className="font-mono text-[10px] opacity-70 sm:text-[11px]">0{i + 1}</span>
                       {t.label}
                       {/* countdown to the next tab while auto-advancing */}
                       {playing && t.id === active && (
-                        <span key={active} className="absolute inset-x-5 bottom-[7px] h-[2px] overflow-hidden rounded-full bg-white/20 md:inset-x-7">
+                        <span key={active} className="absolute inset-x-4 bottom-[6px] h-[2px] overflow-hidden rounded-full bg-white/20 sm:inset-x-5 sm:bottom-[7px] md:inset-x-7">
                           <span className="tab-progress block h-full origin-left rounded-full bg-white/80" style={{ animationDuration: `${AUTOPLAY_MS}ms` }} />
                         </span>
                       )}
@@ -293,7 +296,9 @@ export default function Services() {
                 </div>
               </div>
 
-              <Panel className="relative overflow-hidden p-3 pb-9 sm:h-[520px] sm:p-0 lg:h-[600px]">
+              {/* Phones: the screen comes first, right under the tabs, so the example
+                  is the hook and every auto-advance happens in view. */}
+              <Panel className="relative order-first overflow-hidden p-3 pb-9 sm:h-[520px] sm:p-0 lg:order-none lg:h-[600px]">
                 {/* sm and up: the composed stage */}
                 <div className="hidden sm:block">
                   <AnimatePresence mode="popLayout" initial={false}>

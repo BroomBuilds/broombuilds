@@ -19,12 +19,12 @@ import BookingModal from "./components/booking-modal";
  *   1  Claim     build a site that sells, automate the work       Hero
  *                …acted out: the site comes apart into its layers  (LayerStack)
  *   2  Frame     the two questions every client arrives with      Questions
- *   3  Orient    the whole studio in one quotable paragraph       AnswerBlock
- *   4  Offer     design, build, automate, grow                    Services
- *   5  Proof     live products and live sites                     Work
- *   6  Method    six steps, first call to growing                 Method
- *   7  Fit       the tools it's built on and plugs into           Stack
- *   8  Terms     a project, or a partner                          Engage
+ *   3  Offer     design, build, automate, grow                    Services
+ *   4  Proof     live products and live sites                     Work
+ *   5  Method    six steps, first call to growing                 Method
+ *   6  Fit       the tools it's built on and plugs into           Stack
+ *   7  Terms     a project, or a partner                          Engage
+ *   8  Recap     the whole studio in one quotable paragraph       AnswerBlock
  *   9  Doubts    the questions people ask before they book        Faq
  *  10  Close     one button to the calendar                       Booking
  *
@@ -38,12 +38,12 @@ export default function Home() {
       <main id="main">
         <Hero />
         <Questions />
-        <AnswerBlock />
         <Services />
         <Work />
         <Method />
         <Stack />
         <Engage />
+        <AnswerBlock />
         <Faq />
         <Booking />
       </main>

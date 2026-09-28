@@ -315,8 +315,8 @@ function Launch() {
     <div className="flex h-full flex-col gap-3">
       <In>
         <Card className="flex items-center gap-3 py-3">
-          <span className="flex h-8 flex-1 items-center gap-2 rounded-full bg-ink/[0.04] px-3 font-mono text-[12.5px] text-ink-soft">
-            <span className="relative flex h-2 w-2">
+          <span className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-full bg-ink/[0.04] px-3 font-mono text-[12px] text-ink-soft sm:text-[12.5px]">
+            <span className="relative flex h-2 w-2 shrink-0">
               <motion.span
                 className="absolute inline-flex h-full w-full rounded-full bg-live/60"
                 animate={reduced ? undefined : { scale: [1, 2.2], opacity: [0.8, 0] }}
@@ -324,10 +324,10 @@ function Launch() {
               />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-live" />
             </span>
-            {BM.host}
+            <span className="truncate">{BM.host}</span>
           </span>
           <motion.span
-            className="rounded-full px-3 py-1 text-[12px] font-medium"
+            className="shrink-0 rounded-full px-3 py-1 text-[12px] font-medium"
             initial={reduced ? false : { backgroundColor: "rgba(236,230,218,0.06)", color: "#8b8983" }}
             animate={{ backgroundColor: "#3fa66b", color: "#08090b" }}
             transition={{ duration: 0.3, delay: 1.7 }}
