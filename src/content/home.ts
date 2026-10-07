@@ -130,7 +130,7 @@ export const services = {
 export const work = {
   eyebrow: "Selected work",
   heading: "Live on the internet. Not in a slide deck.",
-  lead: "AI products we designed, built and run, and websites for businesses on three continents. Every one is live. Open it and see.",
+  lead: "Websites, apps and AI products for businesses in Australia, the UK, India, Canada and beyond. Open any of them and see.",
 };
 
 export type StepId = "listen" | "design" | "build" | "automate" | "launch" | "grow";
@@ -289,7 +289,7 @@ export const faq = {
     },
     {
       q: "Do you work with businesses outside India?",
-      a: "Yes. We work with clients in Canada, Australia and India over video calls and shared docs. Time zones haven’t been a problem yet.",
+      a: "Yes. We work with clients in Australia, the UK, Canada and India over video calls and shared docs. Time zones haven’t been a problem yet.",
     },
     {
       q: "What does “recommended by AI” mean?",

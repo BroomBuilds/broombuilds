@@ -18,7 +18,7 @@ import StageReveal from "./stage-reveal";
 type Filter = "all" | ProjectKind;
 const filters: { id: Filter; label: string }[] = [
   { id: "all", label: "Everything" },
-  { id: "product", label: "AI products" },
+  { id: "product", label: "Products & apps" },
   { id: "website", label: "Websites" },
 ];
 
@@ -130,7 +130,7 @@ function WorkCard({ project: p }: { project: Project }) {
           ) : p.kind === "website" ? (
             "Live website"
           ) : (
-            "Platform"
+            "Live product"
           )}
         </span>
         {p.url && (

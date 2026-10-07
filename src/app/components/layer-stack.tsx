@@ -230,17 +230,18 @@ function StaticStack() {
 function StackedList() {
   const content = [<SurfacePlate key="s" priority />, <SearchCompact key="b" />, <N8nCompact key="a" />];
   return (
-    <ol className="container-page space-y-10 pb-6">
+    <ol className="container-page space-y-12 pb-6">
       {layers.map((l, i) => (
         <li key={l.name}>
-          <div className={cn("w-full rounded-[18px] shadow-tile", i === 0 && "aspect-[16/10]")}>{content[i]}</div>
-          <p className="label mt-5 flex items-center gap-2.5 text-ink-muted">
+          {/* Text first, then the picture of it. */}
+          <p className="label flex items-center gap-2.5 text-ink-muted">
             <span className="text-lilac">{l.n}</span>
             <span className="h-px w-5 bg-line-strong" />
             {l.name}
           </p>
           <p className="mt-2 font-display text-[24px] font-semibold leading-tight tracking-[-0.025em]">{l.title}</p>
           <p className="mt-1.5 text-[16px] text-ink-muted">{l.body}</p>
+          <div className={cn("mt-5 w-full rounded-[18px] shadow-tile", i === 0 && "aspect-[16/10]")}>{content[i]}</div>
         </li>
       ))}
     </ol>
